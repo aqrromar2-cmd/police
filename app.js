@@ -928,12 +928,10 @@ function initDiscordAuth() {
 
   // Close Config Modal
   if (closeDiscordConfigModal && discordConfigModal) {
-    closeDiscordConfigModal.addEventListener('click', () => {
-      discordConfigModal.style.display = 'none';
-    });
+    closeDiscordConfigModal.addEventListener('click', closeDiscordConfigModalFunc);
     discordConfigModal.addEventListener('click', (e) => {
       if (e.target === discordConfigModal) {
-        discordConfigModal.style.display = 'none';
+        closeDiscordConfigModalFunc();
       }
     });
   }
@@ -944,7 +942,7 @@ function initDiscordAuth() {
       const val = discordClientIdInput.value.trim();
       if (val) {
         localStorage.setItem('pdp_discord_client_id', val);
-        if (discordConfigModal) discordConfigModal.style.display = 'none';
+        closeDiscordConfigModalFunc();
         loginWithDiscord(val);
       } else {
         alert('الرجاء إدخال Client ID صحيح لتطبيق ديسكورد الخاص بك.');
@@ -963,7 +961,7 @@ function initDiscordAuth() {
         is_demo: true
       };
       localStorage.setItem('pdp_discord_user', JSON.stringify(demoUser));
-      if (discordConfigModal) discordConfigModal.style.display = 'none';
+      closeDiscordConfigModalFunc();
       renderDiscordUserUI();
     });
   }
@@ -976,7 +974,14 @@ function openDiscordConfigModal() {
     if (input) {
       input.value = localStorage.getItem('pdp_discord_client_id') || '';
     }
-    modal.style.display = 'flex';
+    modal.classList.add('open');
+  }
+}
+
+function closeDiscordConfigModalFunc() {
+  const modal = document.getElementById('discordConfigModal');
+  if (modal) {
+    modal.classList.remove('open');
   }
 }
 
