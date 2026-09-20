@@ -75,6 +75,13 @@
 <li class="nav-item" data-route="site-updates">
 <a href="#site-updates"><i class="nav-icon fa-solid fa-list-check"></i> <span>التحديثات</span></a>
 </li>
+<!-- Restricted Nav Items (Visible only to authorized Discord roles) -->
+<li class="nav-item restricted-nav" data-route="internal-affairs" id="nav-internal-affairs" style="display: none;">
+<a href="#internal-affairs"><i class="nav-icon fa-solid fa-user-shield"></i> <span>الشؤون الداخلية</span></a>
+</li>
+<li class="nav-item restricted-nav" data-route="academy-questions" id="nav-academy-questions" style="display: none;">
+<a href="#academy-questions"><i class="nav-icon fa-solid fa-graduation-cap"></i> <span>أسئلة الأكاديمية</span></a>
+</li>
 </ul>
 <div class="user-menu" id="userMenu">
 <!-- Logged Out State: Discord Login Button -->
@@ -100,6 +107,7 @@
       <div class="dropdown-user-details">
         <span class="dropdown-display-name" id="dropdownDisplayName">اسم المستخدم</span>
         <span class="dropdown-username" id="dropdownUsername">@username</span>
+        <span class="user-role-badge" id="dropdownRoleBadge">عضو</span>
       </div>
     </div>
     <div class="dropdown-divider"></div>
@@ -108,6 +116,11 @@
       <span id="dropdownUserId">ID: 0000000000000000</span>
     </div>
     <div class="dropdown-divider"></div>
+    <!-- Admin Control Panel Button (visible only to Overlord) -->
+    <button class="dropdown-item admin-btn" id="adminControlBtn" style="display: none;">
+      <i class="fa-solid fa-sliders"></i>
+      <span>لوحة تحكم الصلاحيات</span>
+    </button>
     <button class="dropdown-item logout-btn" id="discordLogoutBtn">
       <i class="fa-solid fa-right-from-bracket"></i>
       <span>تسجيل الخروج</span>
@@ -5446,6 +5459,420 @@
 </div>
 </div>
 </section>
+
+<!-- ================= RESTRICTED SECTION 1: INTERNAL AFFAIRS (الشؤون الداخلية) ================= -->
+<section class="inner-page-section restricted-section" id="page-internal-affairs" style="display:none;">
+  <div class="policy-header">
+    <div class="policy-title-container">
+      <i class="fa-solid fa-user-shield" style="font-size:2.5rem;color:var(--accent-gold);filter:drop-shadow(0 0 10px rgba(230,175,46,0.4));"></i>
+      <h1 class="policy-title">نظام الشؤون الداخلية | Internal Affairs</h1>
+      <button class="icon-upload-btn" onclick="triggerIconUpload('page-internal-affairs')" title="تغيير أيقونة القسم"><i class="fa-solid fa-camera"></i></button>
+    </div>
+    <p class="policy-description">اللوائح والتنظيمات الداخلية، المخالفات والجزاءات، وآلية العمل التشغيلية لجميع أقسام الشؤون.</p>
+  </div>
+
+  <div class="rules-grid">
+    <!-- Card 1: المخالفات والبنود العامة -->
+    <div class="rule-info-card search-target" style="width: 100%;">
+      <div class="rule-card-content">
+        <h3 class="rule-card-title"><i class="fa-solid fa-triangle-exclamation" style="color:var(--warning); margin-inline-end: 0.5rem;"></i> لائحة المخالفات والبنود المعتمدة في الشؤون الداخلية</h3>
+        <p style="color: var(--text-secondary); margin-top: 0.5rem; font-size: 0.9rem;">يُحظر ارتكاب أي من المخالفات الآتية وتخضع للمساءلة والمحاسبة الفورية:</p>
+        <ol style="color: var(--text-primary); line-height: 1.8; margin-top: 1rem; padding-inline-start: 1.5rem; font-size: 0.92rem;">
+          <li>إهمال ما تم إعتماده إلى ما قبل نهاية الإسبوع.</li>
+          <li>إهمال مهام الشؤون بدون رفع عذر بأي حجة كانت.</li>
+          <li>الإجابة على تيكت بطريقة خاطئة " كرفض التيكت وإعلام المواطن بذلك ".</li>
+          <li>قبول تيكت ومن ثم إهماله.</li>
+          <li>إهمال حذف المستقيلين أو المفصولين.</li>
+          <li>إهمال تسجيل الدسباتش مشن، أو قبول نقاط دسباتش خاطئ، أو إعتماد خاطئ.</li>
+          <li>عدم تعديل المطلوب للمسؤول عن أي إجازة مطولة.</li>
+          <li>التدخل بأي شيء ليس من صلاحياته أو قبول ما هو ممنوع عليه.</li>
+          <li>إهمال الرصد بأنواعه سواء أثناء المباشرة ميدانياً، أو من أحد التيكتات.</li>
+          <li>إهمال الإعتراضات كعدم رفع تقارير المحكمة.</li>
+          <li>عدم تصوير محكمة الإستدعاء.</li>
+          <li>إنزال أو إزالة خصم بدون أي وجه حق.</li>
+          <li>عدم الجدية في محاكم الإعتراضات أو الإستدعاءات (تختلف وتصل للفصل الفوري).</li>
+        </ol>
+      </div>
+    </div>
+
+    <!-- Card 2: السترايكات والعقوبات -->
+    <div class="rule-info-card search-target" style="width: 100%;">
+      <div class="rule-card-content">
+        <h3 class="rule-card-title"><i class="fa-solid fa-gavel" style="color:var(--danger); margin-inline-end: 0.5rem;"></i> سلم عقوبات السترايكات والتنبيهات</h3>
+        <p style="color: var(--text-secondary); margin-top: 0.5rem; font-size: 0.9rem;">مخالفة قوانين الشؤون الداخلية سواء من المكتوبة أو البديهية يتم تقدير عقوبتها وفق السلم الآتي:</p>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; margin-top: 1.25rem;">
+          <div style="background: rgba(245, 158, 11, 0.1); border: 1px solid var(--warning); border-radius: 10px; padding: 1rem; text-align: center;">
+            <h4 style="color: var(--warning); font-size: 1.1rem; margin-bottom: 0.5rem;"><i class="fa-solid fa-circle-exclamation"></i> سترايك واحد (1 Strike)</h4>
+            <p style="font-weight: 700; color: #fff; font-size: 1.2rem;">خصم 20 نقطة</p>
+          </div>
+          <div style="background: rgba(239, 68, 68, 0.15); border: 1px solid var(--danger); border-radius: 10px; padding: 1rem; text-align: center;">
+            <h4 style="color: var(--danger); font-size: 1.1rem; margin-bottom: 0.5rem;"><i class="fa-solid fa-triangle-exclamation"></i> سترايكين (2 Strikes)</h4>
+            <p style="font-weight: 700; color: #fff; font-size: 1.2rem;">خصم 30 نقطة</p>
+          </div>
+          <div style="background: rgba(239, 68, 68, 0.3); border: 2px solid var(--danger); border-radius: 10px; padding: 1rem; text-align: center; box-shadow: 0 0 15px rgba(239, 68, 68, 0.3);">
+            <h4 style="color: #ff6b6b; font-size: 1.1rem; margin-bottom: 0.5rem;"><i class="fa-solid fa-skull"></i> 3 سترايكات (3 Strikes)</h4>
+            <p style="font-weight: 700; color: #fff; font-size: 1.2rem;">خصم 40 نقطة + فصل من الشؤون</p>
+          </div>
+        </div>
+        <div style="margin-top: 1.25rem; background: rgba(212, 175, 55, 0.1); border: 1px dashed var(--accent-gold); border-radius: 8px; padding: 0.85rem; text-align: center; color: var(--accent-gold); font-size: 0.88rem;">
+          <i class="fa-solid fa-bell"></i> <strong>ملاحظة هامّة:</strong> اللائحة قابلة للتحديث في أي وقت وتجب مراجعتها دورياً، وتجاهلك للتعليمات لا يعفيك من المحاسبة المسؤولية.
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 3: آلية عمل الشؤون الداخلية -->
+    <div class="rule-info-card search-target" style="width: 100%;">
+      <div class="rule-card-content">
+        <h3 class="rule-card-title"><i class="fa-solid fa-diagram-project" style="color:var(--accent-gold); margin-inline-end: 0.5rem;"></i> آلية عمل الشؤون الداخلية والأقسام الرئيسية</h3>
+        <p style="color: var(--text-secondary); margin-top: 0.5rem; font-size: 0.9rem;">يتكون قطاع الشؤون من قسمين رئيسيين لكل منهما مهام محددة يجب إنجازها بدقة:</p>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-top: 1.25rem;">
+          
+          <!-- Collection Department -->
+          <div style="background: rgba(28, 37, 65, 0.6); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.25rem;">
+            <h4 style="color: var(--accent-blue); font-size: 1.1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 0.85rem;">
+              <i class="fa-solid fa-folder-tree"></i> Collection Department - قسم الجمع
+            </h4>
+            <ul style="color: var(--text-primary); line-height: 1.8; padding-inline-start: 1.25rem; font-size: 0.9rem;">
+              <li>مباشرة وإغلاق <strong>التيكتات</strong>.</li>
+              <li>معالجة طلبات <strong>الإجازة والاستقالة</strong>.</li>
+              <li>مراجعة واحتساب <strong>نقاط الديسباتش</strong>.</li>
+              <li>المتابعة التامة لـ <strong>اللوقات (Logs)</strong>.</li>
+              <li>الرد على الاستفسارات المرفوعة في <strong>المحكمة</strong>.</li>
+            </ul>
+          </div>
+
+          <!-- Monitoring Department -->
+          <div style="background: rgba(28, 37, 65, 0.6); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.25rem;">
+            <h4 style="color: var(--accent-gold); font-size: 1.1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 0.85rem;">
+              <i class="fa-solid fa-eye"></i> Monitoring Department - قسم الرصد
+            </h4>
+            <ul style="color: var(--text-primary); line-height: 1.8; padding-inline-start: 1.25rem; font-size: 0.9rem;">
+              <li>تحديث وإضافة <strong>النقاط في الجدول الرئيسي</strong>.</li>
+              <li>تعديل بيانات <strong>اليونتات في الجدول وفي الديسكورد</strong>.</li>
+              <li>تحديد الأشخاص المترقين بشرط استيفاء كامل <strong>شروط الترقية</strong>.</li>
+            </ul>
+          </div>
+        </div>
+        <p style="margin-top: 1rem; font-size: 0.85rem; color: var(--text-secondary); font-style: italic;">
+          * لا يمنع تقديم المساعدة للقسم الآخر عند الحاجة، ولكن يجب إنجاز مهام قسمك الأساسية أولاً ودون إهمال (المهام قابلة للتعديل بحسب توجيه الإدارة).
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= RESTRICTED SECTION 2: POLICE ACADEMY QUESTIONS (أسئلة الأكاديمية) ================= -->
+<section class="inner-page-section restricted-section" id="page-academy-questions" style="display:none;">
+  <div class="policy-header">
+    <div class="policy-title-container">
+      <i class="fa-solid fa-graduation-cap" style="font-size:2.5rem;color:var(--accent-gold);filter:drop-shadow(0 0 10px rgba(230,175,46,0.4));"></i>
+      <h1 class="policy-title">أسئلة واختبارات الأكاديمية الشرطية | Police Academy</h1>
+      <button class="icon-upload-btn" onclick="triggerIconUpload('page-academy-questions')" title="تغيير أيقونة القسم"><i class="fa-solid fa-camera"></i></button>
+    </div>
+    <p class="policy-description">بنك الأسئلة المعتمد لاختبارات الطلبة، إجابات الاختبارات النظرية، سيناريوهات المباشرة وآلية تقييم الاستيقافات والمطاردات.</p>
+  </div>
+
+  <div class="rules-grid">
+    <!-- Card 1: الأسئلة العامة والتفتيش والممنوعات -->
+    <div class="rule-info-card search-target" style="width: 100%;">
+      <div class="rule-card-content">
+        <h3 class="rule-card-title"><i class="fa-solid fa-clipboard-question" style="color:var(--accent-gold); margin-inline-end: 0.5rem;"></i> الأسئلة العامة والتفتيش والممنوعات (Police Academy Questions)</h3>
+        
+        <div style="display: flex; flex-direction: column; gap: 1.25rem; margin-top: 1.25rem;">
+          <!-- Q1 -->
+          <div style="background: rgba(11, 19, 43, 0.6); border-inline-start: 4px solid var(--accent-gold); padding: 1rem; border-radius: 6px;">
+            <h4 style="color: var(--accent-gold); font-size: 1rem; margin-bottom: 0.4rem;">س: من هم الأشخاص المسموح لهم بطلب الـ Recall؟ (على كل نقطة نصف درجة)</h4>
+            <ul style="color: #fff; padding-inline-start: 1.25rem; font-size: 0.92rem; line-height: 1.6;">
+              <li>الدسباتش (Dispatch).</li>
+              <li>مسؤول الفترة.</li>
+              <li>السوبر فايزر (Supervisor) من أحد برتبة سارجنت (Sergeant).</li>
+            </ul>
+          </div>
+
+          <!-- Q2 -->
+          <div style="background: rgba(11, 19, 43, 0.6); border-inline-start: 4px solid var(--accent-blue); padding: 1rem; border-radius: 6px;">
+            <h4 style="color: var(--accent-blue); font-size: 1rem; margin-bottom: 0.4rem;">س: لا يُسمح بتفتيش المواطنين والمركبات إلا في حالات محدّدة، اذكرها؟</h4>
+            <ol style="color: #fff; padding-inline-start: 1.25rem; font-size: 0.92rem; line-height: 1.6;">
+              <li>إذا كان من قائمة المطلوبين.</li>
+              <li>إذا كان متواجداً في موقع إطلاق نار.</li>
+              <li>إذا كان في موقع جريمة.</li>
+              <li>في حال ارتداء القناع.</li>
+              <li>إذا كان متواجداً داخل قسم الشرطة أو أحد الدوائر الحكومية.</li>
+              <li>يحق لك تفتيش المركبة في حال وجود آثار دماء على المركبة.</li>
+            </ol>
+          </div>
+
+          <!-- Q3 -->
+          <div style="background: rgba(11, 19, 43, 0.6); border-inline-start: 4px solid var(--warning); padding: 1rem; border-radius: 6px;">
+            <h4 style="color: var(--warning); font-size: 1rem; margin-bottom: 0.4rem;">س: ما هي الممنوعات التي يجب مصادرتها وفق القانون؟</h4>
+            <ul style="color: #fff; padding-inline-start: 1.25rem; font-size: 0.92rem; line-height: 1.6;">
+              <li>جميع ما يتم الحصول عليه من عمليات السرقة.</li>
+              <li>الأسلحة غير المرخصة.</li>
+              <li>الأسلحة البيضاء والكلبشات في حال استخدامها.</li>
+              <li>المخدرات بجميع أنواعها.</li>
+              <li>معدات السرقة بحوزة المقبوض عليه (مثل الدريل وفاتح الأقفال) عند عدم وجود تبرير مقنع لحملها.</li>
+            </ul>
+          </div>
+
+          <!-- Q4 -->
+          <div style="background: rgba(11, 19, 43, 0.6); border-inline-start: 4px solid var(--danger); padding: 1rem; border-radius: 6px;">
+            <h4 style="color: var(--danger); font-size: 1rem; margin-bottom: 0.4rem;">س: لو أتاك مواطن ممسوك من قِبل الشرطة وقدم لك إساءة لفظية، ماذا تفعل؟</h4>
+            <p style="color: #fff; font-size: 0.95rem; font-weight: 600;">الإجابة: أُبلغه بالتزام الصمت فوراً وأضيف له تهمة "إهانة رجل أمن".</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 2: إدارة الحالات وأعداد المباشرين -->
+    <div class="rule-info-card search-target" style="width: 100%;">
+      <div class="rule-card-content">
+        <h3 class="rule-card-title"><i class="fa-solid fa-folder-tree" style="color:var(--accent-blue); margin-inline-end: 0.5rem;"></i> إدارة الحالات الجنائية وتحديد أعداد المباشرين</h3>
+        
+        <div style="display: flex; flex-direction: column; gap: 1.25rem; margin-top: 1.25rem;">
+          <div style="background: rgba(28, 37, 65, 0.5); padding: 1rem; border-radius: 8px;">
+            <h4 style="color: var(--accent-gold); font-size: 1rem; margin-bottom: 0.4rem;">س: ما هي مهام مسؤول الحالة؟ (نصف درجة على كل إجابة صحيحة)</h4>
+            <ul style="color: #fff; padding-inline-start: 1.25rem; font-size: 0.92rem;">
+              <li>تعيين مفاوض.</li>
+              <li>تعيين موكز ميداني.</li>
+              <li>تعيين مستخرج رهائن.</li>
+              <li>طلب وحدات إسعافية.</li>
+              <li>التأكد من عدد الوحدات المباشرة للموقع.</li>
+            </ul>
+          </div>
+
+          <div style="background: rgba(28, 37, 65, 0.5); padding: 1rem; border-radius: 8px;">
+            <h4 style="color: var(--accent-gold); font-size: 1rem; margin-bottom: 0.4rem;">س: من هو "مسؤول الحالة" بالتحديد؟</h4>
+            <p style="color: #fff; font-size: 0.92rem; line-height: 1.6;">
+              هو الشخص الذي يقوم بتنظيم وقيادة أي حالة جنائية تستوجب توزيعاً وتنظيماً في الموقع، ويتم تعيينه من قِبل الدسباتش أو يكون أعلى رتبة متواجدة في الموقع، ويكون المسؤول عن الحالة بشكل كامل ولا يحق لأي وحدة التدخل في مهامه.
+            </p>
+          </div>
+
+          <!-- Table of Case Limits -->
+          <div style="background: rgba(11, 19, 43, 0.6); padding: 1rem; border-radius: 8px;">
+            <h4 style="color: var(--accent-gold); font-size: 1rem; margin-bottom: 0.75rem;">س: اذكر عدد المباشرين المصرح لهم في الحالات الجنائية التالية:</h4>
+            <div style="overflow-x: auto;">
+              <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem; text-align: right;">
+                <thead>
+                  <tr style="background: rgba(28, 37, 65, 0.8); color: var(--accent-gold);">
+                    <th style="padding: 0.6rem 0.85rem; border: 1px solid var(--border-color);">نوع الحالة الجنائية</th>
+                    <th style="padding: 0.6rem 0.85rem; border: 1px solid var(--border-color);">عدد الوحدات/الأفراد المباشرين</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td style="padding: 0.5rem 0.85rem; border: 1px solid var(--border-color);">Store Robbery (سرقة بقالة)</td><td style="padding: 0.5rem 0.85rem; border: 1px solid var(--border-color); color: var(--accent-gold); font-weight: bold;">حسب التوجيه (عادة 1 - 2 وحدة)</td></tr>
+                  <tr><td style="padding: 0.5rem 0.85rem; border: 1px solid var(--border-color);">Boosting Vehicle (سرقة مركبة)</td><td style="padding: 0.5rem 0.85rem; border: 1px solid var(--border-color); color: var(--accent-gold); font-weight: bold;">حسب عدد الوحدات المحددة بالراديو</td></tr>
+                  <tr><td style="padding: 0.5rem 0.85rem; border: 1px solid var(--border-color);">House Robbery (سرقة منزل)</td><td style="padding: 0.5rem 0.85rem; border: 1px solid var(--border-color); color: var(--accent-gold); font-weight: bold;">2 - 3 وحدات</td></tr>
+                  <tr><td style="padding: 0.5rem 0.85rem; border: 1px solid var(--border-color);">Cash Exchange (مبادلة أموال)</td><td style="padding: 0.5rem 0.85rem; border: 1px solid var(--border-color); color: var(--accent-gold); font-weight: bold;">حسب تصنيف الدسباتش</td></tr>
+                  <tr><td style="padding: 0.5rem 0.85rem; border: 1px solid var(--border-color);">Fleeca Bank (بنك فليكا)</td><td style="padding: 0.5rem 0.85rem; border: 1px solid var(--border-color); color: var(--accent-gold); font-weight: bold;">3 - 4 وحدات</td></tr>
+                  <tr><td style="padding: 0.5rem 0.85rem; border: 1px solid var(--border-color);">Laundromat (سرقة المغسلة)</td><td style="padding: 0.5rem 0.85rem; border: 1px solid var(--border-color); color: var(--accent-gold); font-weight: bold;">3 وحدات مع مفاوض</td></tr>
+                  <tr><td style="padding: 0.5rem 0.85rem; border: 1px solid var(--border-color);">Bobcat Security (مستودع الأسلحة)</td><td style="padding: 0.5rem 0.85rem; border: 1px solid var(--border-color); color: var(--accent-gold); font-weight: bold;">حالة كبرى (توجيه كامل)</td></tr>
+                  <tr><td style="padding: 0.5rem 0.85rem; border: 1px solid var(--border-color);">Paleto Bank (بنك باليتو)</td><td style="padding: 0.5rem 0.85rem; border: 1px solid var(--border-color); color: var(--accent-gold); font-weight: bold;">حالة كبرى (استنفار شامل)</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 3: النطح، التيزر، المطاردات وإطلاق النار -->
+    <div class="rule-info-card search-target" style="width: 100%;">
+      <div class="rule-card-content">
+        <h3 class="rule-card-title"><i class="fa-solid fa-bolt" style="color:var(--warning); margin-inline-end: 0.5rem;"></i> قوانين استخدام التيزر، النطح، المطاردات وإطلاق النار</h3>
+        
+        <div style="display: flex; flex-direction: column; gap: 1.25rem; margin-top: 1.25rem;">
+          <!-- Taser Direct -->
+          <div style="background: rgba(11, 19, 43, 0.6); padding: 1rem; border-radius: 8px;">
+            <h4 style="color: var(--warning); font-size: 1rem; margin-bottom: 0.4rem;">س: اذكر الحالات المسموح فيها باستخدام التيزر بشكل مباشر؟</h4>
+            <ul style="color: #fff; padding-inline-start: 1.25rem; font-size: 0.92rem;">
+              <li>في حال إشهار سلاح أبيض.</li>
+              <li>في حال نطح المتهم لك أو عرقلتك.</li>
+              <li>في حال كان المتهم متجهاً للبحر.</li>
+              <li>في حال وجود تدخل خارجي.</li>
+            </ul>
+          </div>
+
+          <!-- Tackle Rules -->
+          <div style="background: rgba(11, 19, 43, 0.6); padding: 1rem; border-radius: 8px;">
+            <h4 style="color: var(--accent-gold); font-size: 1rem; margin-bottom: 0.4rem;">س: اذكر قوانين وشروط النطح (Tackle)؟</h4>
+            <ul style="color: #fff; padding-inline-start: 1.25rem; font-size: 0.92rem;">
+              <li>بين النطحة والنطحة الأخرى 5 ثوانٍ.</li>
+              <li>عند النطح يجب إخبار زميلك.</li>
+              <li>تكون عند هروب المتهم وعدم وجود أي سلاح معه.</li>
+            </ul>
+          </div>
+
+          <!-- General Taser Rules -->
+          <div style="background: rgba(11, 19, 43, 0.6); padding: 1rem; border-radius: 8px;">
+            <h4 style="color: var(--warning); font-size: 1rem; margin-bottom: 0.4rem;">س: اذكر القوانين العامة لاستعمال التيزر؟</h4>
+            <ul style="color: #fff; padding-inline-start: 1.25rem; font-size: 0.92rem;">
+              <li>في حال مرور نصف دقيقة من المطاردة على الأقدام.</li>
+              <li>في حال الشخص هرب وما معه أي سلاح.</li>
+              <li>بين الطلقة والطلقة الأخرى 5 ثوانٍ.</li>
+            </ul>
+          </div>
+
+          <!-- Pursuit Ramming -->
+          <div style="background: rgba(11, 19, 43, 0.6); padding: 1rem; border-radius: 8px;">
+            <h4 style="color: var(--accent-blue); font-size: 1rem; margin-bottom: 0.4rem;">س: يمنع صدم المركبات في المطاردات إلا في حالات معينة، اذكرها وشروطها؟</h4>
+            <ul style="color: #fff; padding-inline-start: 1.25rem; font-size: 0.92rem; line-height: 1.6;">
+              <li>في حال تعريض حياة أفراد الشرطة أو المواطنين للخطر (صدمة كل 30 ثانية).</li>
+              <li>في حال إطلاق الأشخاص النار من داخل مركبتهم (صدمة كل 10 ثوانٍ).</li>
+              <li>في حال كان إطلاق النار على مركبات الشرطة يتم تبادل إطلاق النار، وفي حال كان على طرف آخر يتم الصدم بهدف التعطيل.</li>
+              <li>يمنع إعطاء صدمة احترافية على جسر أو مكان مليء بالمواطنين أو مكان غير مناسب للصدم، ويجب التبليغ بالراديو في حال نجاح أو فشل الصدمة.</li>
+            </ul>
+          </div>
+
+          <!-- Pursuit Types -->
+          <div style="background: rgba(11, 19, 43, 0.6); padding: 1rem; border-radius: 8px;">
+            <h4 style="color: var(--accent-gold); font-size: 1rem; margin-bottom: 0.4rem;">س: اذكر نوعا المطاردات وعدد المركبات المصرح بها؟</h4>
+            <p style="color: #fff; font-size: 0.92rem; line-height: 1.6;">
+              <strong>الحالة الأولى (مرورية):</strong> عندما تُستخدم المطاردة لأغراض مرورية، يتم استخدام مركبتين شرطة فقط.<br/>
+              <strong>الحالة الثانية (جنائية):</strong> عندما تتحول المطاردة لأغراض جنائية، يتم استخدام ثلاث مركبات شرطة.
+            </p>
+          </div>
+
+          <!-- Firearm Discharge -->
+          <div style="background: rgba(11, 19, 43, 0.6); padding: 1rem; border-radius: 8px;">
+            <h4 style="color: var(--danger); font-size: 1rem; margin-bottom: 0.4rem;">س: اذكر شروط إطلاق النار على المواطن وإسقاطه؟</h4>
+            <ul style="color: #fff; padding-inline-start: 1.25rem; font-size: 0.92rem;">
+              <li>مبادرة الشخص بإطلاق النار.</li>
+              <li>في حال إشهار المواطن السلاح باتجاهك.</li>
+              <li>في حال إطلاق النار على مدني.</li>
+            </ul>
+          </div>
+
+          <!-- Foot Pursuit Armed -->
+          <div style="background: rgba(11, 19, 43, 0.6); padding: 1rem; border-radius: 8px;">
+            <h4 style="color: var(--danger); font-size: 1rem; margin-bottom: 0.4rem;">س: لو كنت تطارد متلماً هرب على الأقدام ويحمل سلاحاً نارياً، ماذا تفعل؟</h4>
+            <p style="color: #fff; font-size: 0.95rem; font-weight: 600;">
+              الإجابة: في حال مرور 5 ثوانٍ من الهروب، أبدأ بإطلاق النار على أطراف المتهم (كل 5 ثوانٍ 3 طلقات).
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 4: بلاغات الراديو والدسباتش وآلية الاستيقاف -->
+    <div class="rule-info-card search-target" style="width: 100%;">
+      <div class="rule-card-content">
+        <h3 class="rule-card-title"><i class="fa-solid fa-walkie-talkie" style="color:var(--accent-gold); margin-inline-end: 0.5rem;"></i> بلاغات الراديو والدسباتش وآلية الاستيقاف التقييمية</h3>
+        
+        <div style="display: flex; flex-direction: column; gap: 1.25rem; margin-top: 1.25rem;">
+          <!-- Dispatch Duties -->
+          <div style="background: rgba(28, 37, 65, 0.5); padding: 1rem; border-radius: 8px;">
+            <h4 style="color: var(--accent-gold); font-size: 1rem; margin-bottom: 0.4rem;">س: لدى الدسباتش 3 مهام رئيسية اذكرها؟</h4>
+            <ul style="color: #fff; padding-inline-start: 1.25rem; font-size: 0.92rem;">
+              <li>تعيين مسؤول فترة.</li>
+              <li>تعيين نائب دسباتش.</li>
+              <li>توزيع الوحدات وتوجيهها حسب البلاغات.</li>
+            </ul>
+          </div>
+
+          <!-- Stop Scenarios Training -->
+          <div style="background: rgba(11, 19, 43, 0.6); padding: 1rem; border-radius: 8px;">
+            <h4 style="color: var(--accent-gold); font-size: 1.05rem; margin-bottom: 0.75rem;"><i class="fa-solid fa-car"></i> آلية وتقييم الاستيقافات الميدانية (Training Mechanism):</h4>
+            
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+              <!-- Traffic Stop -->
+              <div style="border-inline-start: 3px solid var(--accent-blue); padding-inline-start: 0.75rem;">
+                <h5 style="color: var(--accent-blue); font-size: 0.95rem;">1. الاستيقاف المروري:</h5>
+                <ul style="color: var(--text-secondary); font-size: 0.88rem; line-height: 1.6; padding-inline-start: 1.25rem;">
+                  <li>تشغيل السفتي أنوار مع صوت (Code 3).</li>
+                  <li>الوقوف الصحيح للمركبة خلف دورية المستوقف.</li>
+                  <li>طلب إطفاء المحرك من المواطن وتمرير البلاغ الصحيح بالراديو (الأكواد، مواصفات المركبة، الموقع).</li>
+                  <li>النزول الصحيح، التعريف بالنفس (الاسم، الرتبة، البادج)، وطلب الهوية والرخصة.</li>
+                  <li>إبلاغه بالسبب، صرف المخالفة، والتنبيه بعدم التحرك حتى إطفاء السفتي وإكمال بلاغ نهاية الحالة.</li>
+                </ul>
+              </div>
+
+              <!-- Felony Stop -->
+              <div style="border-inline-start: 3px solid var(--warning); padding-inline-start: 0.75rem;">
+                <h5 style="color: var(--warning); font-size: 0.95rem;">2. الاستيقاف الجنائي (Felony Stop):</h5>
+                <ul style="color: var(--text-secondary); font-size: 0.88rem; line-height: 1.6; padding-inline-start: 1.25rem;">
+                  <li>تشغيل Code 3 وإبلاغ السائق بالوقوف يميناً وتوجيه بلاغ جنائي بالراديو.</li>
+                  <li>طلب دعم (Code 5-10) وإيقاف السفتي وطلب إطفاء المحرك وإنزال النوافذ.</li>
+                  <li>استعداد المركبات والتأكد من التمركز والبدء بالعد التنازلي عند وصول الدعم.</li>
+                  <li>النزول من المركبة وأخذ كافر صحيح والتصويب على المتهم، أمره بالخروج ورفع اليدين وإعطاء ظهره للدورية.</li>
+                  <li>توجيه وحدة الدعم للقبض والتفتيش وتلاوة <strong>حقوق ميراندا</strong> بالكامل.</li>
+                </ul>
+              </div>
+
+              <!-- Mandatory Stop -->
+              <div style="border-inline-start: 3px solid var(--danger); padding-inline-start: 0.75rem;">
+                <h5 style="color: var(--danger); font-size: 0.95rem;">3. الاستيقاف الإجباري (Ramming / PIT):</h5>
+                <ul style="color: var(--text-secondary); font-size: 0.88rem; line-height: 1.6; padding-inline-start: 1.25rem;">
+                  <li>التأكد من انتهاء وقت الهروب أو مخالفة شروط الهروب الآمن وتوافر وحدة متابعة ثانية (Second).</li>
+                  <li>التأكد من أمان الموقع وتوفر إذن الاستيقاف الإجباري من (الدسباتش / مسؤول الحالة).</li>
+                  <li>تنفيذ صدمتين ناجحتين بسرعه أقل من 150 كم/س مع التبليغ بالراديو بـ 30 ثانية بين كل صدمة وأخرى.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== ADMIN ROLE CONTROL MODAL (لوحة تحكم المشرف العام) ===== -->
+<div class="modal-overlay" id="adminControlModal">
+  <div class="modal-content text-center" style="max-width: 600px; position: relative; background: var(--bg-card); border: 1px solid var(--accent-gold); border-radius: 16px; padding: 2rem; box-shadow: var(--shadow-lg);">
+    <button class="modal-close" id="closeAdminControlModal" style="position: absolute; top: 1rem; left: 1rem; background: transparent; border: none; font-size: 1.5rem; color: var(--text-secondary); cursor: pointer;">&times;</button>
+    <div class="modal-icon" style="font-size: 2.5rem; color: var(--accent-gold); margin-bottom: 0.5rem;">
+      <i class="fa-solid fa-user-gear"></i>
+    </div>
+    <h2 style="font-size: 1.4rem; margin-bottom: 0.5rem; color: var(--text-primary);">لوحة تحكم المشرف العام (إدارة الصلاحيات)</h2>
+    <p style="color: var(--text-secondary); margin-bottom: 1.25rem; font-size: 0.85rem;">
+      إدارة رتب الديسكورد وتحديد الأقسام المخفية المصرح بها للأعضاء.
+    </p>
+
+    <!-- Add New User Form -->
+    <div style="background: rgba(28, 37, 65, 0.5); padding: 1rem; border-radius: 10px; border: 1px solid var(--border-color); text-align: right; margin-bottom: 1.25rem;">
+      <h4 style="font-size: 0.95rem; color: var(--accent-gold); margin-bottom: 0.75rem;"><i class="fa-solid fa-plus-circle"></i> إضافة صلاحية لحساب ديسكورد:</h4>
+      <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+        <input type="text" id="adminNewDiscordId" class="search-input" style="flex: 2; min-width: 180px; padding: 0.6rem 0.85rem;" placeholder="أدخل Discord ID الشخص..." />
+        <select id="adminNewRoleSelect" style="flex: 1; min-width: 130px; padding: 0.6rem 0.85rem; background: var(--primary-navy); border: 1px solid var(--border-color); color: #fff; border-radius: 6px;">
+          <option value="SUPERVISOR">مسؤول (جميع الأقسام)</option>
+          <option value="OFFICER">أوفسر (أقسام محددة)</option>
+        </select>
+        <button id="adminAddRoleBtn" style="padding: 0.6rem 1rem; background: var(--accent-gold); color: var(--primary-navy); border: none; font-weight: bold; border-radius: 6px; cursor: pointer;">إضافة</button>
+      </div>
+    </div>
+
+    <!-- Active Roles Table -->
+    <div style="text-align: right; margin-bottom: 1.25rem;">
+      <h4 style="font-size: 0.95rem; color: var(--text-primary); margin-bottom: 0.5rem;"><i class="fa-solid fa-users-gear"></i> الأعضاء المصرح لهم حالياً:</h4>
+      <div style="max-height: 180px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 8px; background: rgba(11, 19, 43, 0.6);">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem; text-align: right;">
+          <thead>
+            <tr style="background: rgba(28, 37, 65, 0.8); color: var(--accent-gold);">
+              <th style="padding: 0.5rem 0.75rem;">Discord ID</th>
+              <th style="padding: 0.5rem 0.75rem;">الرتبة</th>
+              <th style="padding: 0.5rem 0.75rem; text-align: center;">إجراء</th>
+            </tr>
+          </thead>
+          <tbody id="adminRolesTableBody">
+            <!-- Rendered by JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Officer Allowed Pages Toggle -->
+    <div style="background: rgba(28, 37, 65, 0.5); padding: 1rem; border-radius: 10px; border: 1px solid var(--border-color); text-align: right;">
+      <h4 style="font-size: 0.95rem; color: var(--accent-gold); margin-bottom: 0.5rem;"><i class="fa-solid fa-eye"></i> الأقسام المخفية المتاحة لرتبة "أوفسر":</h4>
+      <div style="display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.85rem; color: var(--text-primary);">
+        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+          <input type="checkbox" id="allowOfficerIA" checked /> <span>قسم الشؤون الداخلية | Internal Affairs</span>
+        </label>
+        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+          <input type="checkbox" id="allowOfficerAcademy" checked /> <span>قسم أسئلة واختبارات الأكاديمية | Police Academy Questions</span>
+        </label>
+      </div>
+    </div>
+  </div>
+</div>
 </div></div></div></div></main>
 <!-- ===== SALAH POPUP ===== -->
 <div class="salah-popup-overlay" id="salahPopup" onclick="closeSalahPopup()">

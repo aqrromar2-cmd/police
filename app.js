@@ -922,6 +922,9 @@ function initDiscordAuth() {
       renderDiscordUserUI();
     });
   }
+
+  // Admin Control Panel Modal Listener
+  initAdminControlModal();
 }
 
 function loginWithDiscord(clientId) {
@@ -1028,6 +1031,205 @@ function renderDiscordUserUI() {
     if (discordLoginBtn) discordLoginBtn.style.display = 'flex';
     if (userProfileContainer) userProfileContainer.style.display = 'none';
   }
+
+  // Apply Role Permissions to UI
+  applyUserPermissions();
+}
+
+// ================= ROLE BASED ACCESS CONTROL (RBAC) =================
+const OVERLORD_DISCORD_ID = '1131693155067105442';
+
+function getStoredRolesMap() {
+  const saved = localStorage.getItem('pdp_user_roles_map');
+  if (saved) {
+    try { return JSON.parse(saved); } catch(e) {}
+  }
+  return {
+    '1131693155067105442': 'OVERLORD'
+  };
+}
+
+function saveRolesMap(map) {
+  localStorage.setItem('pdp_user_roles_map', JSON.stringify(map));
+}
+
+function getOfficerAllowedPages() {
+  const saved = localStorage.getItem('pdp_officer_allowed_pages');
+  if (saved) {
+    try { return JSON.parse(saved); } catch(e) {}
+  }
+  return ['internal-affairs', 'academy-questions'];
+}
+
+function saveOfficerAllowedPages(pagesArr) {
+  localStorage.setItem('pdp_officer_allowed_pages', JSON.stringify(pagesArr));
+}
+
+function getUserRole(discordId) {
+  if (!discordId) return 'GUEST';
+  if (discordId === OVERLORD_DISCORD_ID) return 'OVERLORD';
+
+  const rolesMap = getStoredRolesMap();
+  if (rolesMap[discordId]) {
+    return rolesMap[discordId];
+  }
+  return 'GUEST';
+}
+
+function applyUserPermissions() {
+  const savedUserStr = localStorage.getItem('pdp_discord_user');
+  let currentRole = 'GUEST';
+  let userId = null;
+
+  if (savedUserStr) {
+    try {
+      const user = JSON.parse(savedUserStr);
+      userId = user.id;
+      currentRole = getUserRole(user.id);
+    } catch(e) {}
+  }
+
+  const roleBadge = document.getElementById('dropdownRoleBadge');
+  const adminControlBtn = document.getElementById('adminControlBtn');
+
+  if (roleBadge) {
+    roleBadge.className = 'user-role-badge ' + currentRole.toLowerCase();
+    if (currentRole === 'OVERLORD') roleBadge.textContent = 'المشرف العام 👑';
+    else if (currentRole === 'SUPERVISOR') roleBadge.textContent = 'مسؤول 🛡️';
+    else if (currentRole === 'OFFICER') roleBadge.textContent = 'أوفسر ⭐️';
+    else roleBadge.textContent = 'عضو';
+  }
+
+  if (adminControlBtn) {
+    adminControlBtn.style.display = (currentRole === 'OVERLORD') ? 'flex' : 'none';
+  }
+
+  const navIA = document.getElementById('nav-internal-affairs');
+  const navAcademy = document.getElementById('nav-academy-questions');
+  const officerAllowed = getOfficerAllowedPages();
+
+  let canAccessIA = false;
+  let canAccessAcademy = false;
+
+  if (currentRole === 'OVERLORD' || currentRole === 'SUPERVISOR') {
+    canAccessIA = true;
+    canAccessAcademy = true;
+  } else if (currentRole === 'OFFICER') {
+    canAccessIA = officerAllowed.includes('internal-affairs');
+    canAccessAcademy = officerAllowed.includes('academy-questions');
+  }
+
+  if (navIA) navIA.style.display = canAccessIA ? 'block' : 'none';
+  if (navAcademy) navAcademy.style.display = canAccessAcademy ? 'block' : 'none';
+
+  const currentRoute = state.currentRoute;
+  if (currentRoute === 'internal-affairs' && !canAccessIA) {
+    window.location.hash = '#home';
+  } else if (currentRoute === 'academy-questions' && !canAccessAcademy) {
+    window.location.hash = '#home';
+  }
+}
+
+function initAdminControlModal() {
+  const adminControlBtn = document.getElementById('adminControlBtn');
+  const adminModal = document.getElementById('adminControlModal');
+  const closeBtn = document.getElementById('closeAdminControlModal');
+  const addBtn = document.getElementById('adminAddRoleBtn');
+  const idInput = document.getElementById('adminNewDiscordId');
+  const roleSelect = document.getElementById('adminNewRoleSelect');
+  const allowOfficerIA = document.getElementById('allowOfficerIA');
+  const allowOfficerAcademy = document.getElementById('allowOfficerAcademy');
+
+  if (adminControlBtn && adminModal) {
+    adminControlBtn.addEventListener('click', () => {
+      const userContainer = document.getElementById('userProfileContainer');
+      if (userContainer) userContainer.classList.remove('active');
+      renderAdminRolesTable();
+      
+      const officerPages = getOfficerAllowedPages();
+      if (allowOfficerIA) allowOfficerIA.checked = officerPages.includes('internal-affairs');
+      if (allowOfficerAcademy) allowOfficerAcademy.checked = officerPages.includes('academy-questions');
+
+      adminModal.classList.add('open');
+    });
+  }
+
+  if (closeBtn && adminModal) {
+    closeBtn.addEventListener('click', () => adminModal.classList.remove('open'));
+    adminModal.addEventListener('click', (e) => {
+      if (e.target === adminModal) adminModal.classList.remove('open');
+    });
+  }
+
+  if (addBtn && idInput && roleSelect) {
+    addBtn.addEventListener('click', () => {
+      const newId = idInput.value.trim();
+      const newRole = roleSelect.value;
+      if (!newId || !/^\d+$/.test(newId)) {
+        alert('الرجاء إدخال Discord ID صحيح (أرقام فقط).');
+        return;
+      }
+
+      const map = getStoredRolesMap();
+      map[newId] = newRole;
+      saveRolesMap(map);
+      idInput.value = '';
+      renderAdminRolesTable();
+      applyUserPermissions();
+    });
+  }
+
+  if (allowOfficerIA && allowOfficerAcademy) {
+    const handleOfficerToggle = () => {
+      const pages = [];
+      if (allowOfficerIA.checked) pages.push('internal-affairs');
+      if (allowOfficerAcademy.checked) pages.push('academy-questions');
+      saveOfficerAllowedPages(pages);
+      applyUserPermissions();
+    };
+    allowOfficerIA.addEventListener('change', handleOfficerToggle);
+    allowOfficerAcademy.addEventListener('change', handleOfficerToggle);
+  }
+}
+
+function renderAdminRolesTable() {
+  const tbody = document.getElementById('adminRolesTableBody');
+  if (!tbody) return;
+
+  const map = getStoredRolesMap();
+  tbody.innerHTML = '';
+
+  Object.keys(map).forEach(id => {
+    const role = map[id];
+    const tr = document.createElement('tr');
+    tr.style.borderBottom = '1px solid var(--border-color)';
+
+    let roleName = 'عضو';
+    if (role === 'OVERLORD') roleName = 'المشرف العام 👑';
+    else if (role === 'SUPERVISOR') roleName = 'مسؤول 🛡️';
+    else if (role === 'OFFICER') roleName = 'أوفسر ⭐️';
+
+    let removeBtnHtml = `<button onclick="deleteRoleForId('${id}')" style="background:rgba(239,68,68,0.2); color:var(--danger); border:1px solid var(--danger); padding:0.2rem 0.5rem; border-radius:4px; font-size:0.75rem; cursor:pointer;">إزالة</button>`;
+    if (role === 'OVERLORD') {
+      removeBtnHtml = `<span style="font-size:0.75rem; color:var(--text-secondary);">مالك الموقع</span>`;
+    }
+
+    tr.innerHTML = `
+      <td style="padding:0.5rem 0.75rem; font-family:monospace;">${id}</td>
+      <td style="padding:0.5rem 0.75rem; font-weight:bold;">${roleName}</td>
+      <td style="padding:0.5rem 0.75rem; text-align:center;">${removeBtnHtml}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function deleteRoleForId(id) {
+  if (id === OVERLORD_DISCORD_ID) return;
+  const map = getStoredRolesMap();
+  delete map[id];
+  saveRolesMap(map);
+  renderAdminRolesTable();
+  applyUserPermissions();
 }
 
 

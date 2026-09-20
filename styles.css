@@ -3590,3 +3590,60 @@ footer {
   background: rgba(239, 68, 68, 0.15);
 }
 
+/* ================= ROLE BADGES & ADMIN CONTROL ================= */
+.user-role-badge {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.15rem 0.5rem;
+  border-radius: 12px;
+  margin-top: 0.2rem;
+  background: rgba(148, 163, 184, 0.2);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+  width: fit-content;
+}
+
+.user-role-badge.overlord {
+  background: rgba(212, 175, 55, 0.25);
+  color: var(--accent-gold);
+  border-color: var(--accent-gold);
+  box-shadow: 0 0 8px rgba(212, 175, 55, 0.3);
+}
+
+.user-role-badge.supervisor {
+  background: rgba(58, 134, 200, 0.25);
+  color: var(--accent-blue);
+  border-color: var(--accent-blue);
+}
+
+.user-role-badge.officer {
+  background: rgba(16, 185, 129, 0.2);
+  color: var(--success);
+  border-color: var(--success);
+}
+
+.dropdown-item.admin-btn {
+  color: var(--accent-gold);
+}
+
+.dropdown-item.admin-btn:hover {
+  background: rgba(212, 175, 55, 0.15);
+}
+
+.restricted-nav {
+  position: relative;
+}
+
+.restricted-nav a::after {
+  content: "خاص";
+  font-size: 0.65rem;
+  background: rgba(212, 175, 55, 0.25);
+  color: var(--accent-gold);
+  padding: 0.1rem 0.35rem;
+  border-radius: 4px;
+  margin-inline-start: 0.4rem;
+  border: 1px solid rgba(212, 175, 55, 0.4);
+}
+
+
