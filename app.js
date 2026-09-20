@@ -878,28 +878,21 @@ function initDiscordAuth() {
   const dropdownUsername = document.getElementById('dropdownUsername');
   const dropdownUserId = document.getElementById('dropdownUserId');
   const discordLogoutBtn = document.getElementById('discordLogoutBtn');
-  const discordConfigBtn = document.getElementById('discordConfigBtn');
 
-  const discordConfigModal = document.getElementById('discordConfigModal');
-  const closeDiscordConfigModal = document.getElementById('closeDiscordConfigModal');
-  const discordClientIdInput = document.getElementById('discordClientIdInput');
-  const saveDiscordConfigBtn = document.getElementById('saveDiscordConfigBtn');
-
-  // Default Client ID from User Discord Developer Application
+  // Client ID from User Discord Developer Application
   const DEFAULT_DISCORD_CLIENT_ID = '1533392511685627964';
 
   // Parse token hash if redirected back from Discord, & render real user UI
   checkDiscordHashToken();
   renderDiscordUserUI();
 
-  // Discord Login Click - 100% REAL OAuth Flow
+  // Discord Login Click - Direct Official OAuth Flow
   if (discordLoginBtn) {
     discordLoginBtn.addEventListener('click', () => {
       const clientId = localStorage.getItem('pdp_discord_client_id') || DEFAULT_DISCORD_CLIENT_ID;
 
       if (window.location.protocol === 'file:') {
         alert('ملاحظة هامة: ديسكورد يشترط فتح الموقع من خلال سيرفر محلي (مثل Live Server في VS Code) أو رابط استضافة لتسجيل الدخول الرسمي بدلاً من فتح الملف كـ file://.');
-        openDiscordConfigModal();
         return;
       }
 
@@ -928,67 +921,6 @@ function initDiscordAuth() {
       userProfileContainer.classList.remove('active');
       renderDiscordUserUI();
     });
-  }
-
-  // Open Config Modal
-  if (discordConfigBtn) {
-    discordConfigBtn.addEventListener('click', () => {
-      userProfileContainer.classList.remove('active');
-      openDiscordConfigModal();
-    });
-  }
-
-  // Close Config Modal
-  if (closeDiscordConfigModal && discordConfigModal) {
-    closeDiscordConfigModal.addEventListener('click', closeDiscordConfigModalFunc);
-    discordConfigModal.addEventListener('click', (e) => {
-      if (e.target === discordConfigModal) {
-        closeDiscordConfigModalFunc();
-      }
-    });
-  }
-
-  // Save Config & Trigger REAL Discord OAuth Login
-  if (saveDiscordConfigBtn && discordClientIdInput) {
-    saveDiscordConfigBtn.addEventListener('click', () => {
-      const val = discordClientIdInput.value.trim();
-      if (val) {
-        localStorage.setItem('pdp_discord_client_id', val);
-        closeDiscordConfigModalFunc();
-        if (window.location.protocol === 'file:') {
-          alert('تم حفظ Client ID! تذكر فتح الموقع عبر سيرفر محلي (مثل http://localhost:5500/index.html) لإتمام التوجيه بدلاً من فتح الملف كـ file://');
-        } else {
-          loginWithDiscord(val);
-        }
-      } else {
-        alert('الرجاء إدخال Client ID صحيح لتطبيق ديسكورد الخاص بك.');
-      }
-    });
-  }
-}
-
-function openDiscordConfigModal() {
-  const modal = document.getElementById('discordConfigModal');
-  const input = document.getElementById('discordClientIdInput');
-  const redirectInfo = document.getElementById('discordRedirectUriDisplay');
-  if (modal) {
-    if (input) {
-      input.value = localStorage.getItem('pdp_discord_client_id') || '';
-    }
-    if (redirectInfo) {
-      const uri = window.location.protocol === 'file:'
-        ? 'http://localhost:5500/index.html (أو رابط استضافتك)'
-        : window.location.origin + window.location.pathname;
-      redirectInfo.textContent = uri;
-    }
-    modal.classList.add('open');
-  }
-}
-
-function closeDiscordConfigModalFunc() {
-  const modal = document.getElementById('discordConfigModal');
-  if (modal) {
-    modal.classList.remove('open');
   }
 }
 
