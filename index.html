@@ -5461,27 +5461,27 @@
 </div>
 <!-- ===== DISCORD CONFIG MODAL ===== -->
 <div class="modal-overlay" id="discordConfigModal">
-  <div class="modal-content text-center" style="max-width: 480px; position: relative; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 2rem; box-shadow: var(--shadow-lg);">
+  <div class="modal-content text-center" style="max-width: 500px; position: relative; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 2.25rem 2rem; box-shadow: var(--shadow-lg);">
     <button class="modal-close" id="closeDiscordConfigModal" style="position: absolute; top: 1rem; left: 1rem; background: transparent; border: none; font-size: 1.5rem; color: var(--text-secondary); cursor: pointer;">&times;</button>
-    <div class="modal-icon" style="font-size: 2.5rem; color: #5865F2; margin-bottom: 1rem;">
+    <div class="modal-icon" style="font-size: 2.75rem; color: #5865F2; margin-bottom: 0.75rem;">
       <i class="fa-brands fa-discord"></i>
     </div>
-    <h2 style="font-size: 1.4rem; margin-bottom: 0.5rem; color: var(--text-primary);">إعدادات ربط ديسكورد</h2>
+    <h2 style="font-size: 1.4rem; margin-bottom: 0.5rem; color: var(--text-primary);">ربط تطبيق ديسكورد الرسمي (OAuth2)</h2>
     <p style="color: var(--text-secondary); margin-bottom: 1.25rem; font-size: 0.88rem; line-height: 1.6;">
-      لربط الدخول بحساب ديسكورد الخاص بك، أدخل Client ID الخاص بتطبيقك في Discord Developer Portal، أو اضغط على "دخول تجريبي" للمعاينة السريعة.
+      لتفعيل تسجيل الدخول الحقيقي 100% عبر ديسكورد، أدخل <strong>Client ID</strong> الخاص بتطبيقك من <strong>Discord Developer Portal</strong>.
     </p>
-    <div style="text-align: right; margin-bottom: 1.25rem;">
-      <label for="discordClientIdInput" style="display: block; margin-bottom: 0.5rem; font-weight: 600; font-size: 0.88rem; color: var(--text-primary);">Client ID (تطبيق ديسكورد):</label>
-      <input type="text" id="discordClientIdInput" style="width: 100%; padding: 0.75rem 1rem; background: rgba(11, 19, 43, 0.6); border: 1px solid var(--border-color); border-radius: 8px; color: #fff; font-size: 0.9rem;" placeholder="أدخل Client ID الخاص بك..." />
+    <div style="text-align: right; margin-bottom: 1rem;">
+      <label for="discordClientIdInput" style="display: block; margin-bottom: 0.5rem; font-weight: 600; font-size: 0.88rem; color: var(--text-primary);">Application Client ID:</label>
+      <input type="text" id="discordClientIdInput" style="width: 100%; padding: 0.75rem 1rem; background: rgba(11, 19, 43, 0.6); border: 1px solid var(--border-color); border-radius: 8px; color: #fff; font-size: 0.9rem;" placeholder="أدخل Client ID الخاص بتطبيقك هنا..." />
     </div>
-    <div style="display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap;">
-      <button id="saveDiscordConfigBtn" style="flex: 1; min-width: 140px; padding: 0.75rem 1rem; background: #5865F2; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: 0.2s;">
-        <i class="fa-solid fa-check"></i> حفظ وتسجيل الدخول
-      </button>
-      <button id="demoLoginBtn" style="flex: 1; min-width: 140px; padding: 0.75rem 1rem; background: rgba(212, 175, 55, 0.15); color: var(--accent-gold); border: 1px solid var(--accent-gold); border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: 0.2s;">
-        <i class="fa-solid fa-flask"></i> دخول تجريبي (Demo)
-      </button>
+    <div style="text-align: right; margin-bottom: 1.25rem; background: rgba(28, 37, 65, 0.6); padding: 0.85rem; border-radius: 8px; border: 1px dashed var(--accent-gold);">
+      <span style="font-size: 0.8rem; color: var(--accent-gold); font-weight: 700; display: block; margin-bottom: 0.35rem;">مهم جداً: Redirect URI في Discord Developer Portal</span>
+      <span style="font-size: 0.78rem; color: var(--text-secondary); display: block; margin-bottom: 0.35rem;">أضف الرابط التالي بالضبط في قسم OAuth2 -> Redirects:</span>
+      <code id="discordRedirectUriDisplay" style="font-size: 0.82rem; color: #ffffff; word-break: break-all; font-family: monospace; background: rgba(0,0,0,0.3); padding: 0.35rem 0.6rem; border-radius: 4px; display: block;">http://localhost:5500/index.html</code>
     </div>
+    <button id="saveDiscordConfigBtn" style="width: 100%; padding: 0.85rem 1rem; background: #5865F2; color: white; border: none; border-radius: 8px; font-weight: 700; font-size: 0.95rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.6rem; transition: 0.2s;">
+      <i class="fa-brands fa-discord"></i> ربط وتوجيه لتسجيل الدخول الرسمي
+    </button>
   </div>
 </div>
 

@@ -36,6 +36,7 @@ const elements = {
 // Initialize Application
 document.addEventListener('DOMContentLoaded', () => {
   initTheme();
+  checkDiscordHashToken();
   initRouter();
   initAccordions();
   initStatsObserver();
@@ -84,7 +85,13 @@ function initRouter() {
 
 function handleRoute() {
   const rawHash = window.location.hash;
-  const hash = rawHash ? rawHash.replace('#', '') : 'home';
+  let hash = rawHash ? rawHash.replace('#', '') : 'home';
+  
+  // Ignore OAuth token hash in SPA router
+  if (hash.includes('access_token=')) {
+    hash = 'home';
+  }
+  
   state.currentRoute = hash;
 
   // Close mobile navigation drawer if open
@@ -877,21 +884,26 @@ function initDiscordAuth() {
   const closeDiscordConfigModal = document.getElementById('closeDiscordConfigModal');
   const discordClientIdInput = document.getElementById('discordClientIdInput');
   const saveDiscordConfigBtn = document.getElementById('saveDiscordConfigBtn');
-  const demoLoginBtn = document.getElementById('demoLoginBtn');
 
-  // Parse token hash if redirected from Discord, & render user UI
+  // Default Client ID from User Discord Developer Application
+  const DEFAULT_DISCORD_CLIENT_ID = '1533392511685627964';
+
+  // Parse token hash if redirected back from Discord, & render real user UI
   checkDiscordHashToken();
   renderDiscordUserUI();
 
-  // Discord Login Click
+  // Discord Login Click - 100% REAL OAuth Flow
   if (discordLoginBtn) {
     discordLoginBtn.addEventListener('click', () => {
-      const clientId = localStorage.getItem('pdp_discord_client_id');
-      if (!clientId) {
+      const clientId = localStorage.getItem('pdp_discord_client_id') || DEFAULT_DISCORD_CLIENT_ID;
+
+      if (window.location.protocol === 'file:') {
+        alert('ملاحظة هامة: ديسكورد يشترط فتح الموقع من خلال سيرفر محلي (مثل Live Server في VS Code) أو رابط استضافة لتسجيل الدخول الرسمي بدلاً من فتح الملف كـ file://.');
         openDiscordConfigModal();
-      } else {
-        loginWithDiscord(clientId);
+        return;
       }
+
+      loginWithDiscord(clientId);
     });
   }
 
@@ -936,33 +948,21 @@ function initDiscordAuth() {
     });
   }
 
-  // Save Config & Login
+  // Save Config & Trigger REAL Discord OAuth Login
   if (saveDiscordConfigBtn && discordClientIdInput) {
     saveDiscordConfigBtn.addEventListener('click', () => {
       const val = discordClientIdInput.value.trim();
       if (val) {
         localStorage.setItem('pdp_discord_client_id', val);
         closeDiscordConfigModalFunc();
-        loginWithDiscord(val);
+        if (window.location.protocol === 'file:') {
+          alert('تم حفظ Client ID! تذكر فتح الموقع عبر سيرفر محلي (مثل http://localhost:5500/index.html) لإتمام التوجيه بدلاً من فتح الملف كـ file://');
+        } else {
+          loginWithDiscord(val);
+        }
       } else {
         alert('الرجاء إدخال Client ID صحيح لتطبيق ديسكورد الخاص بك.');
       }
-    });
-  }
-
-  // Demo Login Click
-  if (demoLoginBtn) {
-    demoLoginBtn.addEventListener('click', () => {
-      const demoUser = {
-        id: "718293847561029384",
-        username: "LSPD_Chief",
-        global_name: "قائد الشرطة (LSPD)",
-        avatar_url: "badge.png",
-        is_demo: true
-      };
-      localStorage.setItem('pdp_discord_user', JSON.stringify(demoUser));
-      closeDiscordConfigModalFunc();
-      renderDiscordUserUI();
     });
   }
 }
@@ -970,9 +970,16 @@ function initDiscordAuth() {
 function openDiscordConfigModal() {
   const modal = document.getElementById('discordConfigModal');
   const input = document.getElementById('discordClientIdInput');
+  const redirectInfo = document.getElementById('discordRedirectUriDisplay');
   if (modal) {
     if (input) {
       input.value = localStorage.getItem('pdp_discord_client_id') || '';
+    }
+    if (redirectInfo) {
+      const uri = window.location.protocol === 'file:'
+        ? 'http://localhost:5500/index.html (أو رابط استضافتك)'
+        : window.location.origin + window.location.pathname;
+      redirectInfo.textContent = uri;
     }
     modal.classList.add('open');
   }
@@ -986,10 +993,13 @@ function closeDiscordConfigModalFunc() {
 }
 
 function loginWithDiscord(clientId) {
+  // Clean redirect URI without hash or query params
   const redirectUri = window.location.origin + window.location.pathname;
   const scope = encodeURIComponent('identify');
   const responseType = 'token';
   const authUrl = `https://discord.com/oauth2/authorize?client_id=${encodeURIComponent(clientId)}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=${responseType}&scope=${scope}`;
+  
+  // Redirect to official Discord authorization URL
   window.location.href = authUrl;
 }
 
@@ -1001,19 +1011,24 @@ function checkDiscordHashToken() {
   const accessToken = params.get('access_token');
 
   if (accessToken) {
+    // Immediately replace hash with #home to keep SPA router clean & functional
+    history.replaceState(null, document.title, window.location.pathname + window.location.search + '#home');
+
+    // Fetch REAL user profile data directly from Discord API
     fetch('https://discord.com/api/v10/users/@me', {
       headers: {
         'Authorization': `Bearer ${accessToken}`
       }
     })
     .then(res => {
-      if (!res.ok) throw new Error('فشل جلب بيانات ديسكورد');
+      if (!res.ok) throw new Error('فشل جلب بيانات ديسكورد الرسمية');
       return res.json();
     })
     .then(user => {
       let avatarUrl = 'logo_blue.png';
       if (user.avatar) {
-        avatarUrl = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=128`;
+        const ext = user.avatar.startsWith('a_') ? 'gif' : 'png';
+        avatarUrl = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.${ext}?size=256`;
       } else {
         const defaultIndex = user.discriminator && user.discriminator !== '0'
           ? (parseInt(user.discriminator) % 5)
@@ -1031,8 +1046,12 @@ function checkDiscordHashToken() {
       };
 
       localStorage.setItem('pdp_discord_user', JSON.stringify(userData));
-      history.replaceState(null, document.title, window.location.pathname + window.location.search);
       renderDiscordUserUI();
+      
+      // Ensure home page is displayed after login
+      if (typeof handleRoute === 'function') {
+        handleRoute();
+      }
     })
     .catch(err => {
       console.error('Discord Auth Error:', err);
@@ -1059,7 +1078,7 @@ function renderDiscordUserUI() {
       if (userProfileContainer) userProfileContainer.style.display = 'flex';
 
       const displayName = user.global_name || user.username || 'المستخدم';
-      const avatar = user.avatar_url || 'badge.png';
+      const avatar = user.avatar_url || 'logo_blue.png';
 
       if (userAvatarImg) userAvatarImg.src = avatar;
       if (userNameText) userNameText.textContent = displayName;
