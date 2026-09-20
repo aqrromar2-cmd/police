@@ -661,26 +661,13 @@ a {
 
 /* Category Content Layout with Sidebar */
 .policy-layout {
-  display: flex;
+  display: grid;
+  grid-template-columns: 280px 1fr;
   gap: 2rem;
   align-items: start;
 }
 
-.policy-content {
-  flex: 1;
-  min-width: 0;
-  order: 1;
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: 16px;
-  padding: 2rem;
-  box-shadow: var(--shadow-sm);
-}
-
 .policy-sidebar {
-  width: 280px;
-  flex-shrink: 0;
-  order: 2;
   position: sticky;
   top: 90px;
   background: var(--bg-card);
