@@ -75,13 +75,6 @@
 <li class="nav-item" data-route="site-updates">
 <a href="#site-updates"><i class="nav-icon fa-solid fa-list-check"></i> <span>التحديثات</span></a>
 </li>
-<!-- Restricted Nav Items (Visible only to authorized Discord roles) -->
-<li class="nav-item restricted-nav" data-route="internal-affairs" id="nav-internal-affairs" style="display: none;">
-<a href="#internal-affairs"><i class="nav-icon fa-solid fa-user-shield"></i> <span>الشؤون الداخلية</span></a>
-</li>
-<li class="nav-item restricted-nav" data-route="academy-questions" id="nav-academy-questions" style="display: none;">
-<a href="#academy-questions"><i class="nav-icon fa-solid fa-graduation-cap"></i> <span>أسئلة الأكاديمية</span></a>
-</li>
 </ul>
 <div class="user-menu" id="userMenu">
 <!-- Logged Out State: Discord Login Button -->
@@ -212,6 +205,22 @@
 <li class="sidebar-item" data-target="contraband-policy"><a href="#contraband-policy"><i class="nav-icon fa-solid fa-box-open"></i> <span>قوانين مصادرة الممنوعات</span></a></li>
 <li class="sidebar-item" data-target="azkar"><a href="#azkar"><i class="nav-icon fa-solid fa-moon"></i> <span>أذكار ودعاء</span></a></li>
 <li class="sidebar-item" data-target="site-updates"><a href="#site-updates"><i class="nav-icon fa-solid fa-list-check"></i> <span>التحديثات</span></a></li>
+<!-- Restricted Sections (Visible only to authorized Discord roles) -->
+<li class="sidebar-divider restricted-nav" id="sidebar-restricted-divider" style="display: none; margin: 0.5rem 0; border-top: 1px dashed rgba(230, 175, 46, 0.3);"></li>
+<li class="sidebar-item restricted-nav" data-target="internal-affairs" id="sidebar-internal-affairs" style="display: none;">
+  <a href="#internal-affairs">
+    <i class="nav-icon fa-solid fa-user-shield"></i>
+    <span>الشؤون الداخلية</span>
+    <span class="restricted-badge">خاص</span>
+  </a>
+</li>
+<li class="sidebar-item restricted-nav" data-target="academy-questions" id="sidebar-academy-questions" style="display: none;">
+  <a href="#academy-questions">
+    <i class="nav-icon fa-solid fa-graduation-cap"></i>
+    <span>أسئلة الأكاديمية</span>
+    <span class="restricted-badge">خاص</span>
+  </a>
+</li>
 </ul>
 </aside>
 <!-- Main Interactive Card containing page info -->

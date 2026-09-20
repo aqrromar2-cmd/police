@@ -157,7 +157,8 @@ function handleRoute() {
 
 function updateActiveNavItems(route) {
   // Update top Nav links
-  elements.navItems.forEach(item => {
+  const navItems = document.querySelectorAll('.nav-item');
+  navItems.forEach(item => {
     if (item.getAttribute('data-route') === route) {
       item.classList.add('active');
     } else {
@@ -166,7 +167,8 @@ function updateActiveNavItems(route) {
   });
 
   // Update inner Sidebar menu links
-  elements.sidebarItems.forEach(item => {
+  const sidebarItems = document.querySelectorAll('.sidebar-item');
+  sidebarItems.forEach(item => {
     if (item.getAttribute('data-target') === route) {
       item.classList.add('active');
     } else {
@@ -182,10 +184,13 @@ function updateBreadcrumbs() {
   }
   elements.breadcrumbsContainer.style.visibility = 'visible';
   
-  // Find navigation name
-  const currentNavItem = document.querySelector(`.nav-item[data-route="${state.currentRoute}"] span`);
-  if (currentNavItem) {
-    elements.breadcrumbActive.textContent = currentNavItem.textContent.trim();
+  // Find navigation name from nav-item or sidebar-item
+  let currentItem = document.querySelector(`.nav-item[data-route="${state.currentRoute}"] span`);
+  if (!currentItem) {
+    currentItem = document.querySelector(`.sidebar-item[data-target="${state.currentRoute}"] span`);
+  }
+  if (currentItem) {
+    elements.breadcrumbActive.textContent = currentItem.textContent.trim();
   }
 }
 
@@ -1104,8 +1109,12 @@ function applyUserPermissions() {
     adminControlBtn.style.display = (currentRole === 'OVERLORD') ? 'flex' : 'none';
   }
 
+  const sidebarIA = document.getElementById('sidebar-internal-affairs');
+  const sidebarAcademy = document.getElementById('sidebar-academy-questions');
+  const sidebarDivider = document.getElementById('sidebar-restricted-divider');
   const navIA = document.getElementById('nav-internal-affairs');
   const navAcademy = document.getElementById('nav-academy-questions');
+
   const officerAllowed = getOfficerAllowedPages();
 
   let canAccessIA = false;
@@ -1118,6 +1127,10 @@ function applyUserPermissions() {
     canAccessIA = officerAllowed.includes('internal-affairs');
     canAccessAcademy = officerAllowed.includes('academy-questions');
   }
+
+  if (sidebarIA) sidebarIA.style.display = canAccessIA ? 'block' : 'none';
+  if (sidebarAcademy) sidebarAcademy.style.display = canAccessAcademy ? 'block' : 'none';
+  if (sidebarDivider) sidebarDivider.style.display = (canAccessIA || canAccessAcademy) ? 'block' : 'none';
 
   if (navIA) navIA.style.display = canAccessIA ? 'block' : 'none';
   if (navAcademy) navAcademy.style.display = canAccessAcademy ? 'block' : 'none';
