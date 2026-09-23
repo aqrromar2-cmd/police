@@ -48,6 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initViolationsBook();
   initBunood();
   initDiscordAuth();
+  initLocalVisualEditor();
 });
 
 // ================= THEME ENGINE =================
@@ -1117,8 +1118,12 @@ function applyUserPermissions() {
 
   const officerAllowed = getOfficerAllowedPages();
 
-  let canAccessIA = false;
-  let canAccessAcademy = false;
+  const isLocal = window.location.protocol === 'file:' || 
+                  window.location.hostname === 'localhost' || 
+                  window.location.hostname === '127.0.0.1';
+
+  let canAccessIA = isLocal;
+  let canAccessAcademy = isLocal;
 
   if (currentRole === 'OVERLORD' || currentRole === 'SUPERVISOR') {
     canAccessIA = true;
@@ -1243,6 +1248,347 @@ function deleteRoleForId(id) {
   saveRolesMap(map);
   renderAdminRolesTable();
   applyUserPermissions();
+}
+
+// ================= LOCAL INLINE PENCIL EDITOR ENGINE =================
+function initLocalVisualEditor() {
+  const isLocal = window.location.protocol === 'file:' || 
+                  window.location.hostname === 'localhost' || 
+                  window.location.hostname === '127.0.0.1';
+
+  const localExportHeaderBtn = document.getElementById('localExportHeaderBtn');
+
+  // Show header export button ONLY if opened locally
+  if (isLocal) {
+    if (localExportHeaderBtn) {
+      localExportHeaderBtn.style.display = 'inline-flex';
+      localExportHeaderBtn.addEventListener('click', exportCleanHtmlFile);
+    }
+  } else {
+    // Hidden on production domain
+    if (localExportHeaderBtn) localExportHeaderBtn.style.display = 'none';
+    return;
+  }
+
+  // Restore saved edits from localStorage
+  restoreLocalTextEdits();
+
+  // Attach pencil edit buttons to all text nodes & lists
+  attachPencilButtons();
+
+  // Re-attach whenever page changes
+  window.addEventListener('hashchange', () => {
+    setTimeout(attachPencilButtons, 150);
+  });
+
+  function attachPencilButtons() {
+    // Select structured containers for hover pencil icons (EXCLUDING nav links)
+    const blockSelectors = `
+      .rule-info-card, .announcement-card, .quick-card,
+      .policy-header, .hero-content, .azkar-card,
+      .accordion-item
+    `;
+
+    const blocks = document.querySelectorAll(blockSelectors);
+
+    blocks.forEach(el => {
+      if (el.dataset.pencilAttached) return;
+      el.dataset.pencilAttached = 'true';
+
+      if (getComputedStyle(el).position === 'static') {
+        el.style.position = 'relative';
+      }
+
+      // Create pencil button at top corner
+      const pencil = document.createElement('button');
+      pencil.className = 'pencil-edit-btn';
+      pencil.innerHTML = '<i class="fa-solid fa-pen"></i>';
+      pencil.title = 'تعديل هذا المحتوى';
+      pencil.addEventListener('click', (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        const textTarget = el.querySelector('.rule-card-text, .rule-card-title, .announcement-desc, .policy-description, .quick-card-desc, .hero-subtitle, p, span') || el;
+        startEditingElement(textTarget);
+      });
+
+      el.appendChild(pencil);
+    });
+
+    // Double-click to edit content text elements on the page (EXCLUDING nav links)
+    const allTextEls = document.querySelectorAll(`
+      .rule-card-title, .rule-card-text, .rule-card-num,
+      .announcement-title, .announcement-desc, .announcement-date,
+      .policy-title, .policy-description, .hero-title, .hero-subtitle,
+      .accordion-title, .accordion-desc, .accordion-body p, .accordion-body li,
+      .azkar-text, .salah-hero h2, .salah-desc,
+      .quick-card-title, .quick-card-desc,
+      .alert-box, h1, h2, h3, h4, h5, h6, p, li, td, th
+    `);
+
+    allTextEls.forEach(el => {
+      if (el.dataset.dblclickAttached) return;
+      if (['SCRIPT', 'STYLE', 'INPUT', 'TEXTAREA', 'BUTTON'].includes(el.tagName)) return;
+      if (el.closest('.nav-links') || el.closest('.sidebar-menu') || el.tagName === 'A' || el.closest('a')) return; // Exclude nav links!
+      if (el.classList.contains('pencil-edit-btn') || el.classList.contains('inline-popover-btn') || el.classList.contains('local-export-badge-btn')) return;
+
+      el.dataset.dblclickAttached = 'true';
+      el.addEventListener('dblclick', (e) => {
+        e.stopPropagation();
+        startEditingElement(el);
+      });
+    });
+
+    // Image click edit for content images
+    const images = document.querySelectorAll('img:not(.user-avatar):not(.dropdown-avatar)');
+    images.forEach(img => {
+      if (img.dataset.imageEditAttached) return;
+      if (img.closest('.nav-links') || img.closest('.sidebar-menu')) return;
+
+      img.dataset.imageEditAttached = 'true';
+      img.style.cursor = 'pointer';
+      img.title = 'انقر لتغيير هذه الصورة';
+      img.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const input = document.getElementById('localImageFileInput');
+        if (!input) return;
+        
+        const onFileSelect = (evt) => {
+          const file = evt.target.files[0];
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = (re) => {
+              img.src = re.target.result;
+              saveAllTextEditsToStorage();
+              showInlineToast('✓ تم تغيير الصورة بنجاح');
+            };
+            reader.readAsDataURL(file);
+          }
+          input.removeEventListener('change', onFileSelect);
+        };
+        input.addEventListener('change', onFileSelect);
+        input.click();
+      });
+    });
+  }
+
+  let activeEditingElement = null;
+  let activeOriginalHTML = '';
+  let activePopover = null;
+
+  function startEditingElement(el) {
+    if (activeEditingElement && activeEditingElement !== el) {
+      cancelEditingCurrent();
+    }
+
+    activeEditingElement = el;
+
+    // Temporarily hide pencil button inside element during edit
+    const pencilBtn = el.querySelector('.pencil-edit-btn');
+    if (pencilBtn) pencilBtn.style.display = 'none';
+
+    activeOriginalHTML = el.innerHTML;
+    el.classList.add('inline-editing-active');
+    el.setAttribute('contenteditable', 'true');
+    el.setAttribute('spellcheck', 'false');
+    el.focus();
+
+    // Create Save / Cancel popover toolbar
+    const popover = document.createElement('div');
+    popover.className = 'inline-action-popover';
+    popover.innerHTML = `
+      <button class="inline-popover-btn save"><i class="fa-solid fa-check"></i> حفظ</button>
+      <button class="inline-popover-btn cancel"><i class="fa-solid fa-xmark"></i> إلغاء</button>
+    `;
+
+    // Prevent contenteditable focus loss on clicking buttons
+    popover.addEventListener('mousedown', (e) => e.preventDefault());
+
+    popover.querySelector('.save').addEventListener('click', (e) => {
+      e.stopPropagation();
+      saveEditingCurrent();
+    });
+
+    popover.querySelector('.cancel').addEventListener('click', (e) => {
+      e.stopPropagation();
+      cancelEditingCurrent();
+    });
+
+    // Handle ESC key
+    const handleKeyDown = (evt) => {
+      if (evt.key === 'Escape') {
+        cancelEditingCurrent();
+        el.removeEventListener('keydown', handleKeyDown);
+      }
+    };
+    el.addEventListener('keydown', handleKeyDown);
+
+    // Append popover
+    if (getComputedStyle(el).position === 'static') {
+      el.style.position = 'relative';
+    }
+    el.appendChild(popover);
+    activePopover = popover;
+  }
+
+  function saveEditingCurrent() {
+    if (!activeEditingElement) return;
+
+    if (activePopover) activePopover.remove();
+
+    const pencilBtn = activeEditingElement.querySelector('.pencil-edit-btn');
+    if (pencilBtn) pencilBtn.style.display = 'inline-flex';
+
+    activeEditingElement.removeAttribute('contenteditable');
+    activeEditingElement.removeAttribute('spellcheck');
+    activeEditingElement.classList.remove('inline-editing-active');
+
+    saveAllTextEditsToStorage();
+    showInlineToast('✓ تم حفظ النص بنجاح');
+
+    activeEditingElement = null;
+    activePopover = null;
+    activeOriginalHTML = '';
+  }
+
+  function cancelEditingCurrent() {
+    if (!activeEditingElement) return;
+
+    if (activePopover) activePopover.remove();
+
+    // Revert exact original HTML
+    activeEditingElement.innerHTML = activeOriginalHTML;
+
+    const pencilBtn = activeEditingElement.querySelector('.pencil-edit-btn');
+    if (pencilBtn) pencilBtn.style.display = 'inline-flex';
+
+    activeEditingElement.removeAttribute('contenteditable');
+    activeEditingElement.removeAttribute('spellcheck');
+    activeEditingElement.classList.remove('inline-editing-active');
+
+    showInlineToast('✕ تم إلغاء التعديل', true);
+
+    activeEditingElement = null;
+    activePopover = null;
+    activeOriginalHTML = '';
+  }
+
+  function saveAllTextEditsToStorage() {
+    const editsData = [];
+    const targets = document.querySelectorAll('[data-pencil-attached="true"]');
+    targets.forEach(el => {
+      const clone = el.cloneNode(true);
+      const pencil = clone.querySelector('.pencil-edit-btn');
+      if (pencil) pencil.remove();
+
+      const selector = getUniqueSelector(el);
+      editsData.push({
+        selector: selector,
+        html: clone.innerHTML
+      });
+    });
+    localStorage.setItem('pdp_local_text_edits', JSON.stringify(editsData));
+  }
+
+  function restoreLocalTextEdits() {
+    const saved = localStorage.getItem('pdp_local_text_edits');
+    if (!saved) return;
+    try {
+      const editsData = JSON.parse(saved);
+      editsData.forEach(item => {
+        if (item.selector) {
+          const el = document.querySelector(item.selector);
+          if (el && item.html) {
+            const pencil = el.querySelector('.pencil-edit-btn');
+            el.innerHTML = item.html;
+            if (pencil) el.appendChild(pencil);
+          }
+        }
+      });
+    } catch(e) {}
+  }
+
+  function getUniqueSelector(el) {
+    if (el.id) return `#${el.id}`;
+    let path = [];
+    while (el && el.nodeType === Node.ELEMENT_NODE) {
+      let selector = el.nodeName.toLowerCase();
+      if (el.className) {
+        const classes = String(el.className).replace('inline-editing-active', '').trim().split(/\s+/).filter(c => c && !c.includes('contenteditable')).join('.');
+        if (classes) selector += '.' + classes;
+      }
+      let sibling = el;
+      let nth = 1;
+      while (sibling = sibling.previousElementSibling) {
+        if (sibling.nodeName.toLowerCase() == el.nodeName.toLowerCase()) nth++;
+      }
+      if (nth != 1) selector += ":nth-of-type("+nth+")";
+      path.unshift(selector);
+      el = el.parentNode;
+    }
+    return path.join(" > ");
+  }
+
+  function exportCleanHtmlFile() {
+    if (activeEditingElement) cancelEditingCurrent();
+
+    // Clone whole document
+    const clone = document.documentElement.cloneNode(true);
+
+    // Clean all pencil edit buttons, export badges, popovers and toast notices from clone
+    const pencils = clone.querySelectorAll('.pencil-edit-btn');
+    pencils.forEach(p => p.remove());
+
+    const popovers = clone.querySelectorAll('.inline-action-popover');
+    popovers.forEach(p => p.remove());
+
+    const localBtn = clone.querySelector('#localExportHeaderBtn');
+    if (localBtn) localBtn.remove();
+
+    const toast = clone.querySelector('#inlineToastNotice');
+    if (toast) toast.remove();
+
+    const editables = clone.querySelectorAll('[contenteditable]');
+    editables.forEach(el => {
+      el.removeAttribute('contenteditable');
+      el.removeAttribute('spellcheck');
+      el.removeAttribute('data-pencil-attached');
+      el.classList.remove('inline-editing-active');
+    });
+
+    // Generate clean HTML
+    const htmlContent = '<!DOCTYPE html>\n' + clone.outerHTML;
+
+    // Download file as index.html
+    const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'index.html';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    alert('✅ تم تصدير واستخراج ملف index.html المعدّل بنجاح!\n\nقم باستبدال ملف index.html في مجلد مشروعك المحلي ثم ارفعه للدومين والاستضافة الخاصة بك.');
+  }
+
+  function showInlineToast(message, isDanger = false) {
+    const toast = document.getElementById('inlineToastNotice');
+    const toastText = document.getElementById('inlineToastText');
+    const toastIcon = document.getElementById('inlineToastIcon');
+    if (!toast || !toastText) return;
+
+    toastText.textContent = message;
+    if (toastIcon) {
+      toastIcon.className = isDanger ? 'fa-solid fa-circle-xmark' : 'fa-solid fa-circle-check';
+      toastIcon.style.color = isDanger ? '#ef4444' : '#10b981';
+    }
+
+    toast.style.display = 'flex';
+    setTimeout(() => {
+      toast.style.display = 'none';
+    }, 2500);
+  }
 }
 
 
