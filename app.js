@@ -863,7 +863,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const sectionIds = [
     'page-general-rules', 'page-dispatcher-taser', 'page-radio-protocols',
     'page-pursuit-policy', 'page-case-management', 'page-criminal-procedures',
-    'page-firearm-policy', 'page-contraband-policy', 'page-azkar', 'page-site-updates'
+    'page-firearm-policy', 'page-contraband-policy', 'page-azkar', 'page-site-updates',
+    'page-internal-affairs', 'page-academy-questions', 'page-academy-challenges'
   ];
   sectionIds.forEach(id => {
     const saved = localStorage.getItem('sectionIcon_' + id);
@@ -1094,7 +1095,7 @@ function getOfficerAllowedPages() {
   if (saved) {
     try { return JSON.parse(saved); } catch(e) {}
   }
-  return ['internal-affairs', 'academy-questions'];
+  return ['internal-affairs', 'academy-questions', 'academy-challenges'];
 }
 
 function saveOfficerAllowedPages(pagesArr) {
@@ -1143,6 +1144,7 @@ function applyUserPermissions() {
 
   const sidebarIA = document.getElementById('sidebar-internal-affairs');
   const sidebarAcademy = document.getElementById('sidebar-academy-questions');
+  const sidebarChallenges = document.getElementById('sidebar-academy-challenges');
   const sidebarDivider = document.getElementById('sidebar-restricted-divider');
   const navIA = document.getElementById('nav-internal-affairs');
   const navAcademy = document.getElementById('nav-academy-questions');
@@ -1155,18 +1157,22 @@ function applyUserPermissions() {
 
   let canAccessIA = isLocal;
   let canAccessAcademy = isLocal;
+  let canAccessChallenges = isLocal;
 
   if (currentRole === 'OVERLORD' || currentRole === 'SUPERVISOR') {
     canAccessIA = true;
     canAccessAcademy = true;
+    canAccessChallenges = true;
   } else if (currentRole === 'OFFICER') {
     canAccessIA = officerAllowed.includes('internal-affairs');
     canAccessAcademy = officerAllowed.includes('academy-questions');
+    canAccessChallenges = officerAllowed.includes('academy-challenges') || officerAllowed.includes('academy-questions');
   }
 
   if (sidebarIA) sidebarIA.style.display = canAccessIA ? 'block' : 'none';
   if (sidebarAcademy) sidebarAcademy.style.display = canAccessAcademy ? 'block' : 'none';
-  if (sidebarDivider) sidebarDivider.style.display = (canAccessIA || canAccessAcademy) ? 'block' : 'none';
+  if (sidebarChallenges) sidebarChallenges.style.display = canAccessChallenges ? 'block' : 'none';
+  if (sidebarDivider) sidebarDivider.style.display = (canAccessIA || canAccessAcademy || canAccessChallenges) ? 'block' : 'none';
 
   if (navIA) navIA.style.display = canAccessIA ? 'block' : 'none';
   if (navAcademy) navAcademy.style.display = canAccessAcademy ? 'block' : 'none';
@@ -1175,6 +1181,8 @@ function applyUserPermissions() {
   if (currentRoute === 'internal-affairs' && !canAccessIA) {
     window.location.hash = '#home';
   } else if (currentRoute === 'academy-questions' && !canAccessAcademy) {
+    window.location.hash = '#home';
+  } else if (currentRoute === 'academy-challenges' && !canAccessChallenges) {
     window.location.hash = '#home';
   }
 }
