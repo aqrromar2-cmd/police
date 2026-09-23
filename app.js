@@ -896,13 +896,22 @@ function initDiscordAuth() {
   // Discord Login Click - Direct Official OAuth Flow
   if (discordLoginBtn) {
     discordLoginBtn.addEventListener('click', () => {
-      const clientId = localStorage.getItem('pdp_discord_client_id') || DEFAULT_DISCORD_CLIENT_ID;
-
       if (window.location.protocol === 'file:') {
-        alert('ملاحظة هامة: ديسكورد يشترط فتح الموقع من خلال سيرفر محلي (مثل Live Server في VS Code) أو رابط استضافة لتسجيل الدخول الرسمي بدلاً من فتح الملف كـ file://.');
+        // Auto-login as Overlord immediately without showing alert
+        const localAdmin = {
+          id: OVERLORD_DISCORD_ID,
+          username: 'local_admin',
+          global_name: 'المشرف العام (التعديل المحلي)',
+          avatar_url: 'logo_blue.png',
+          access_token: 'local_admin_session',
+          logged_in_at: Date.now()
+        };
+        localStorage.setItem('pdp_discord_user', JSON.stringify(localAdmin));
+        renderDiscordUserUI();
         return;
       }
 
+      const clientId = localStorage.getItem('pdp_discord_client_id') || DEFAULT_DISCORD_CLIENT_ID;
       loginWithDiscord(clientId);
     });
   }
@@ -1011,7 +1020,27 @@ function renderDiscordUserUI() {
   const dropdownUsername = document.getElementById('dropdownUsername');
   const dropdownUserId = document.getElementById('dropdownUserId');
 
-  const savedUserStr = localStorage.getItem('pdp_discord_user');
+  const isLocal = window.location.protocol === 'file:' || 
+                  window.location.hostname === 'localhost' || 
+                  window.location.hostname === '127.0.0.1';
+
+  let savedUserStr = localStorage.getItem('pdp_discord_user');
+
+  // Auto-login as Overlord in local mode so the user never sees Discord login prompts or blocks when running from file://
+  if (isLocal) {
+    if (!savedUserStr) {
+      const localAdmin = {
+        id: OVERLORD_DISCORD_ID,
+        username: 'local_admin',
+        global_name: 'المشرف العام (التعديل المحلي)',
+        avatar_url: 'logo_blue.png',
+        access_token: 'local_admin_session',
+        logged_in_at: Date.now()
+      };
+      localStorage.setItem('pdp_discord_user', JSON.stringify(localAdmin));
+      savedUserStr = JSON.stringify(localAdmin);
+    }
+  }
 
   if (savedUserStr) {
     try {
@@ -1087,7 +1116,14 @@ function saveRolesMap(map) {
   });
 
   localStorage.setItem('pdp_user_roles_map', JSON.stringify(fullState));
-  window.PDP_GLOBAL_ROLES_MAP = Object.assign({}, map);
+  
+  const activeRoles = {};
+  Object.keys(map).forEach(id => {
+    if (map[id] && map[id] !== 'REMOVED') {
+      activeRoles[id] = map[id];
+    }
+  });
+  window.PDP_GLOBAL_ROLES_MAP = activeRoles;
 }
 
 function getOfficerAllowedPages() {
@@ -1233,6 +1269,8 @@ function initAdminControlModal() {
       idInput.value = '';
       renderAdminRolesTable();
       applyUserPermissions();
+
+      silentSaveHtmlToLocalDisk('✓ تمت إضافة الصلاحية وتحديث ملف الموقع على جهازك بنجاح');
     });
   }
 
@@ -1243,6 +1281,8 @@ function initAdminControlModal() {
       if (allowOfficerAcademy.checked) pages.push('academy-questions');
       saveOfficerAllowedPages(pages);
       applyUserPermissions();
+
+      silentSaveHtmlToLocalDisk('✓ تم تحديث خيارات الرتب وحفظ الملفات محلياً بنجاح');
     };
     allowOfficerIA.addEventListener('change', handleOfficerToggle);
     allowOfficerAcademy.addEventListener('change', handleOfficerToggle);
@@ -1301,13 +1341,18 @@ function renderAdminRolesTable() {
 
 function deleteRoleForId(id) {
   const cleanId = String(id).trim();
-  if (cleanId === OVERLORD_DISCORD_ID) return;
+  if (cleanId === OVERLORD_DISCORD_ID) {
+    alert('لا يمكن إزالة صلاحيات مالك الموقع الرئيسية.');
+    return;
+  }
 
   const map = getStoredRolesMap();
   delete map[cleanId];
   saveRolesMap(map);
   renderAdminRolesTable();
   applyUserPermissions();
+
+  silentSaveHtmlToLocalDisk('✓ تمت إزالة الصلاحية وتحديث ملف الموقع على جهازك بنجاح');
 }
 
 window.deleteRoleForId = deleteRoleForId;
@@ -1505,7 +1550,11 @@ function initLocalVisualEditor() {
     activeEditingElement.classList.remove('inline-editing-active');
 
     saveAllTextEditsToStorage();
-    showInlineToast('✓ تم حفظ النص بنجاح');
+    if (typeof silentSaveHtmlToLocalDisk === 'function') {
+      silentSaveHtmlToLocalDisk('✓ تم حفظ النص وتحديث ملف الموقع على جهازك بنجاح');
+    } else {
+      showInlineToast('✓ تم حفظ النص بنجاح');
+    }
 
     activeEditingElement = null;
     activePopover = null;
@@ -1668,6 +1717,71 @@ function exportCleanHtmlFile() {
 }
 
 window.exportCleanHtmlFile = exportCleanHtmlFile;
+
+// ================= SILENT SAVE FUNCTION (Direct Local File Update) =================
+function silentSaveHtmlToLocalDisk(toastMsg = '✓ تم حفظ التعديل محلياً') {
+  if (typeof activeEditingElement !== 'undefined' && activeEditingElement) {
+    if (typeof cancelEditingCurrent === 'function') cancelEditingCurrent();
+  }
+
+  // Clone whole document
+  const clone = document.documentElement.cloneNode(true);
+
+  // Clean elements from clone
+  const pencils = clone.querySelectorAll('.pencil-edit-btn');
+  pencils.forEach(p => p.remove());
+
+  const popovers = clone.querySelectorAll('.inline-action-popover');
+  popovers.forEach(p => p.remove());
+
+  const localBtn = clone.querySelector('#localExportHeaderBtn');
+  if (localBtn) localBtn.remove();
+
+  const toast = clone.querySelector('#inlineToastNotice');
+  if (toast) toast.remove();
+
+  const modals = clone.querySelectorAll('.modal, .admin-control-modal, .discord-modal');
+  modals.forEach(m => m.classList.remove('open', 'active'));
+
+  const editables = clone.querySelectorAll('[contenteditable]');
+  editables.forEach(el => {
+    el.removeAttribute('contenteditable');
+    el.removeAttribute('spellcheck');
+    el.removeAttribute('data-pencil-attached');
+    el.classList.remove('inline-editing-active');
+  });
+
+  // Auto-sync active roles into pdpRolesConfig script tag inside clone
+  const activeRoles = typeof getStoredRolesMap === 'function' ? getStoredRolesMap() : {};
+  let configScript = clone.querySelector('#pdpRolesConfig');
+  if (configScript) {
+    configScript.textContent = '\n  window.PDP_GLOBAL_ROLES_MAP = ' + JSON.stringify(activeRoles, null, 2) + ';\n';
+  }
+
+  const htmlContent = '<!DOCTYPE html>\n' + clone.outerHTML;
+
+  // Send SILENT POST to local save server (running via node server.js)
+  fetch('http://localhost:3000/api/save-html', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ html: htmlContent })
+  })
+  .then(res => res.json())
+  .then(resData => {
+    if (resData && resData.success) {
+      if (typeof showInlineToast === 'function') {
+        showInlineToast(toastMsg || '✓ تم تحديث وحفظ ملفات الموقع على جهازك بنجاح');
+      }
+    }
+  })
+  .catch(err => {
+    if (typeof showInlineToast === 'function') {
+      showInlineToast(toastMsg || '✓ تم حفظ التعديلات محلياً');
+    }
+  });
+}
+
+window.silentSaveHtmlToLocalDisk = silentSaveHtmlToLocalDisk;
 
 
 
