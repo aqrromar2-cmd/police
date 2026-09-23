@@ -1057,15 +1057,36 @@ function getStoredRolesMap() {
   if (saved) {
     try {
       const parsed = JSON.parse(saved);
-      map = Object.assign(map, parsed);
+      Object.keys(parsed).forEach(id => {
+        if (parsed[id] === 'REMOVED' || parsed[id] === null || parsed[id] === false) {
+          delete map[id];
+        } else {
+          map[id] = parsed[id];
+        }
+      });
     } catch(e) {}
   }
   return map;
 }
 
 function saveRolesMap(map) {
-  localStorage.setItem('pdp_user_roles_map', JSON.stringify(map));
-  window.PDP_GLOBAL_ROLES_MAP = map;
+  const fullState = {};
+  const allKnownIds = new Set([
+    ...Object.keys(DEFAULT_ROLES_MAP),
+    ...Object.keys(window.PDP_GLOBAL_ROLES_MAP || {}),
+    ...Object.keys(map)
+  ]);
+
+  allKnownIds.forEach(id => {
+    if (map[id] && map[id] !== 'REMOVED') {
+      fullState[id] = map[id];
+    } else {
+      fullState[id] = 'REMOVED';
+    }
+  });
+
+  localStorage.setItem('pdp_user_roles_map', JSON.stringify(fullState));
+  window.PDP_GLOBAL_ROLES_MAP = Object.assign({}, map);
 }
 
 function getOfficerAllowedPages() {
@@ -1236,6 +1257,8 @@ function renderAdminRolesTable() {
 
   Object.keys(map).forEach(id => {
     const role = map[id];
+    if (!role || role === 'REMOVED') return;
+
     const tr = document.createElement('tr');
     tr.style.borderBottom = '1px solid var(--border-color)';
 
@@ -1244,7 +1267,7 @@ function renderAdminRolesTable() {
     else if (role === 'SUPERVISOR') roleName = 'مسؤول 🛡️';
     else if (role === 'OFFICER') roleName = 'أوفسر ⭐️';
 
-    let removeBtnHtml = `<button onclick="deleteRoleForId('${id}')" style="background:rgba(239,68,68,0.2); color:var(--danger); border:1px solid var(--danger); padding:0.2rem 0.5rem; border-radius:4px; font-size:0.75rem; cursor:pointer;">إزالة</button>`;
+    let removeBtnHtml = `<button type="button" class="admin-remove-btn" data-id="${id}" style="background:rgba(239,68,68,0.2); color:var(--danger); border:1px solid var(--danger); padding:0.25rem 0.65rem; border-radius:4px; font-size:0.78rem; font-weight:bold; cursor:pointer; transition:all 0.2s ease;">إزالة</button>`;
     if (role === 'OVERLORD') {
       removeBtnHtml = `<span style="font-size:0.75rem; color:var(--text-secondary);">مالك الموقع</span>`;
     }
@@ -1256,16 +1279,30 @@ function renderAdminRolesTable() {
     `;
     tbody.appendChild(tr);
   });
+
+  // Attach direct event listeners to remove buttons
+  const removeBtns = tbody.querySelectorAll('.admin-remove-btn');
+  removeBtns.forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const targetId = btn.getAttribute('data-id');
+      deleteRoleForId(targetId);
+    });
+  });
 }
 
 function deleteRoleForId(id) {
-  if (id === OVERLORD_DISCORD_ID) return;
+  const cleanId = String(id).trim();
+  if (cleanId === OVERLORD_DISCORD_ID) return;
+
   const map = getStoredRolesMap();
-  delete map[id];
+  delete map[cleanId];
   saveRolesMap(map);
   renderAdminRolesTable();
   applyUserPermissions();
 }
+
+window.deleteRoleForId = deleteRoleForId;
 
 // ================= LOCAL INLINE PENCIL EDITOR ENGINE =================
 function initLocalVisualEditor() {
