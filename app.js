@@ -1590,57 +1590,6 @@ function initLocalVisualEditor() {
     return path.join(" > ");
   }
 
-  function exportCleanHtmlFile() {
-    if (activeEditingElement) cancelEditingCurrent();
-
-    // Clone whole document
-    const clone = document.documentElement.cloneNode(true);
-
-    // Clean all pencil edit buttons, export badges, popovers and toast notices from clone
-    const pencils = clone.querySelectorAll('.pencil-edit-btn');
-    pencils.forEach(p => p.remove());
-
-    const popovers = clone.querySelectorAll('.inline-action-popover');
-    popovers.forEach(p => p.remove());
-
-    const localBtn = clone.querySelector('#localExportHeaderBtn');
-    if (localBtn) localBtn.remove();
-
-    const toast = clone.querySelector('#inlineToastNotice');
-    if (toast) toast.remove();
-
-    const editables = clone.querySelectorAll('[contenteditable]');
-    editables.forEach(el => {
-      el.removeAttribute('contenteditable');
-      el.removeAttribute('spellcheck');
-      el.removeAttribute('data-pencil-attached');
-      el.classList.remove('inline-editing-active');
-    });
-
-    // Auto-sync current active roles map into pdpRolesConfig script tag
-    const activeRoles = getStoredRolesMap();
-    let configScript = clone.querySelector('#pdpRolesConfig');
-    if (configScript) {
-      configScript.textContent = '\n  window.PDP_GLOBAL_ROLES_MAP = ' + JSON.stringify(activeRoles, null, 2) + ';\n';
-    }
-
-    // Generate clean HTML
-    const htmlContent = '<!DOCTYPE html>\n' + clone.outerHTML;
-
-    // Download file as index.html
-    const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'index.html';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-
-    alert('✅ تم تصدير واستخراج ملف index.html المعدّل بنجاح!\n\nقم باستبدال ملف index.html في مجلد مشروعك المحلي ثم ارفعه للدومين والاستضافة الخاصة بك.');
-  }
-
   function showInlineToast(message, isDanger = false) {
     const toast = document.getElementById('inlineToastNotice');
     const toastText = document.getElementById('inlineToastText');
@@ -1659,6 +1608,66 @@ function initLocalVisualEditor() {
     }, 2500);
   }
 }
+
+// ================= GLOBAL EXPORT FUNCTION =================
+function exportCleanHtmlFile() {
+  if (typeof activeEditingElement !== 'undefined' && activeEditingElement) {
+    if (typeof cancelEditingCurrent === 'function') cancelEditingCurrent();
+  }
+
+  // Clone whole document
+  const clone = document.documentElement.cloneNode(true);
+
+  // Clean all pencil edit buttons, export badges, popovers and toast notices from clone
+  const pencils = clone.querySelectorAll('.pencil-edit-btn');
+  pencils.forEach(p => p.remove());
+
+  const popovers = clone.querySelectorAll('.inline-action-popover');
+  popovers.forEach(p => p.remove());
+
+  const localBtn = clone.querySelector('#localExportHeaderBtn');
+  if (localBtn) localBtn.remove();
+
+  const toast = clone.querySelector('#inlineToastNotice');
+  if (toast) toast.remove();
+
+  // Remove open class from all modals in clone
+  const modals = clone.querySelectorAll('.modal, .admin-control-modal, .discord-modal');
+  modals.forEach(m => m.classList.remove('open', 'active'));
+
+  const editables = clone.querySelectorAll('[contenteditable]');
+  editables.forEach(el => {
+    el.removeAttribute('contenteditable');
+    el.removeAttribute('spellcheck');
+    el.removeAttribute('data-pencil-attached');
+    el.classList.remove('inline-editing-active');
+  });
+
+  // Auto-sync current active roles map into pdpRolesConfig script tag
+  const activeRoles = typeof getStoredRolesMap === 'function' ? getStoredRolesMap() : {};
+  let configScript = clone.querySelector('#pdpRolesConfig');
+  if (configScript) {
+    configScript.textContent = '\n  window.PDP_GLOBAL_ROLES_MAP = ' + JSON.stringify(activeRoles, null, 2) + ';\n';
+  }
+
+  // Generate clean HTML
+  const htmlContent = '<!DOCTYPE html>\n' + clone.outerHTML;
+
+  // Download file as index.html
+  const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'index.html';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+
+  alert('✅ تم تصدير واستخراج ملف index.html المعدّل بنجاح!\n\nقم باستبدال ملف index.html في مجلد مشروعك المحلي ثم ارفعه للدومين والاستضافة الخاصة بك.');
+}
+
+window.exportCleanHtmlFile = exportCleanHtmlFile;
 
 
 
