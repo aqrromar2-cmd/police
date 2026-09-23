@@ -5883,6 +5883,16 @@
         </label>
       </div>
     </div>
+
+    <!-- Sync & Export Button for Admin Panel -->
+    <div style="margin-top: 1.25rem; text-align: center;">
+      <button id="adminExportRolesBtn" style="width: 100%; padding: 0.75rem; background: linear-gradient(135deg, var(--accent-gold), #c8961e); color: #0b132b; border: none; font-weight: 800; border-radius: 8px; cursor: pointer; font-size: 0.9rem; box-shadow: 0 4px 12px rgba(230, 175, 46, 0.3);">
+        <i class="fa-solid fa-floppy-disk"></i> تصدير وحفظ الصلاحيات في ملف index.html للموقع
+      </button>
+      <p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.4rem;">
+        عند إضافة أو إزالة رتبة لأي عضو، اضغط على هذا الزر لاستخراج ملف index.html المحدث ورفعه للاستضافة.
+      </p>
+    </div>
   </div>
 </div>
 </div></div></div></div></main>
@@ -5904,6 +5914,14 @@
 
 <input type="file" id="localImageFileInput" accept="image/*" style="display: none;" />
 
+<!-- ===== GLOBAL ROLES CONFIGURATION (Auto-synced across all devices & domains) ===== -->
+<script id="pdpRolesConfig">
+  window.PDP_GLOBAL_ROLES_MAP = {
+    "1131693155067105442": "OVERLORD",
+    "855870309349589012": "OFFICER",
+    "1436542857958920312": "SUPERVISOR"
+  };
+</script>
 <!-- ===== APPLICATION SCRIPT ===== -->
 <script src="app.js"></script>
 </body>

@@ -1045,18 +1045,27 @@ function renderDiscordUserUI() {
 // ================= ROLE BASED ACCESS CONTROL (RBAC) =================
 const OVERLORD_DISCORD_ID = '1131693155067105442';
 
+const DEFAULT_ROLES_MAP = {
+  '1131693155067105442': 'OVERLORD',
+  '855870309349589012': 'OFFICER',
+  '1436542857958920312': 'SUPERVISOR'
+};
+
 function getStoredRolesMap() {
+  let map = Object.assign({}, DEFAULT_ROLES_MAP, window.PDP_GLOBAL_ROLES_MAP || {});
   const saved = localStorage.getItem('pdp_user_roles_map');
   if (saved) {
-    try { return JSON.parse(saved); } catch(e) {}
+    try {
+      const parsed = JSON.parse(saved);
+      map = Object.assign(map, parsed);
+    } catch(e) {}
   }
-  return {
-    '1131693155067105442': 'OVERLORD'
-  };
+  return map;
 }
 
 function saveRolesMap(map) {
   localStorage.setItem('pdp_user_roles_map', JSON.stringify(map));
+  window.PDP_GLOBAL_ROLES_MAP = map;
 }
 
 function getOfficerAllowedPages() {
@@ -1073,11 +1082,12 @@ function saveOfficerAllowedPages(pagesArr) {
 
 function getUserRole(discordId) {
   if (!discordId) return 'GUEST';
-  if (discordId === OVERLORD_DISCORD_ID) return 'OVERLORD';
+  const cleanId = String(discordId).trim();
+  if (cleanId === OVERLORD_DISCORD_ID) return 'OVERLORD';
 
   const rolesMap = getStoredRolesMap();
-  if (rolesMap[discordId]) {
-    return rolesMap[discordId];
+  if (rolesMap[cleanId]) {
+    return rolesMap[cleanId];
   }
   return 'GUEST';
 }
@@ -1207,6 +1217,13 @@ function initAdminControlModal() {
     };
     allowOfficerIA.addEventListener('change', handleOfficerToggle);
     allowOfficerAcademy.addEventListener('change', handleOfficerToggle);
+  }
+
+  const adminExportRolesBtn = document.getElementById('adminExportRolesBtn');
+  if (adminExportRolesBtn) {
+    adminExportRolesBtn.addEventListener('click', () => {
+      exportCleanHtmlFile();
+    });
   }
 }
 
@@ -1554,6 +1571,13 @@ function initLocalVisualEditor() {
       el.removeAttribute('data-pencil-attached');
       el.classList.remove('inline-editing-active');
     });
+
+    // Auto-sync current active roles map into pdpRolesConfig script tag
+    const activeRoles = getStoredRolesMap();
+    let configScript = clone.querySelector('#pdpRolesConfig');
+    if (configScript) {
+      configScript.textContent = '\n  window.PDP_GLOBAL_ROLES_MAP = ' + JSON.stringify(activeRoles, null, 2) + ';\n';
+    }
 
     // Generate clean HTML
     const htmlContent = '<!DOCTYPE html>\n' + clone.outerHTML;
